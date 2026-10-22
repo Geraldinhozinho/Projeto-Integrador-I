@@ -41,3 +41,10 @@ footer {
     height: 20px;
     margin: 1rem;
 }
+
+
+
+:root{
+    --white: #fff;
+    --black: #191919;
+}
