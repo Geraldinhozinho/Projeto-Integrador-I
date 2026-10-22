@@ -23,9 +23,9 @@
 header {
     background-color: #191919;
     color: #fff;
-    padding: 1rem;
+    padding: 1.3rem;
     width: 270px;
-    flex-shrink: 0;
+    flex-shrink: 0; 
 }
 
 #topo{
@@ -34,22 +34,24 @@ header {
     align-items: center;
 }
 
-#topo h1{
-    font-weight: 400;
+#topo #logo{
+    width: 72px;
+    height: 72px;
 }
 
 #topo img{
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
 }
-#topo #icon{
-    padding: 10px;
-    background-color: blue;
-    border: 1px #fff solid;
-
+#icon{
+    border: 1px solid  rgba(255, 255, 255, 0.4);
+    display: flex;
+    padding: 6px;
+    border-radius: 5px;
 }
 
-/*Header*/
+/* FIM - Header*/
+
 
 .area-principal {
     flex: 1;
