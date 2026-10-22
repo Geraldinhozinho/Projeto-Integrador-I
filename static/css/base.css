@@ -1,7 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
 * {
     box-sizing: border-box;
     padding: 0;
     margin: 0;
+    font-family: "Open Sans", sans-serif;
 }
 
 .pagina {
@@ -14,6 +17,9 @@
     flex: 1;
 }
 
+
+/*Header*/
+
 header {
     background-color: #191919;
     color: #fff;
@@ -22,11 +28,37 @@ header {
     flex-shrink: 0;
 }
 
+#topo{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#topo h1{
+    font-weight: 400;
+}
+
+#topo img{
+    width: 20px;
+    height: 20px;
+}
+#topo #icon{
+    padding: 10px;
+    background-color: blue;
+    border: 1px #fff solid;
+
+}
+
+/*Header*/
+
 .area-principal {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
+
+
+
 
 footer {
     margin-top: auto;
