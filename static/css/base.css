@@ -109,6 +109,57 @@ header {
     height: 15px;
 }
 
+
+
+#search {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 300px;
+}
+
+#search input {
+  width: 100%;
+  padding-left: 35px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  box-sizing: border-box;
+}
+
+#search img {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none; 
+}
+
+.input-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  max-width: 300px;
+}
+
+.input-container input {
+  width: 100%;
+  padding-left: 35px; /* Espaço para a imagem não cobrir o texto */
+  padding-top: 8px;
+  padding-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.input-container img {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  pointer-events: none; /* Evita que o clique na imagem interfira no input */
+}
 /* FIM - Header*/
 
 
