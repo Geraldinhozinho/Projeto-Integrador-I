@@ -54,8 +54,8 @@ header {
     background-color: var(--red) ;
     border-radius: 50%;
     font-size: 11px;
-    padding: 2px 6px;
-    font-weight: 400;
+    padding: 1px 4px;
+    font-weight: 500;
     position: absolute;
     right: -8px;
     top: -8px;
@@ -64,6 +64,51 @@ header {
 #botao_sino{
     position: relative;
 }
+
+#group_user{
+    display: flex;
+    gap: 7px;
+}
+
+#user{
+    display: flex;
+    align-items: center;
+    background-color: var(--black-2);
+    border-radius: 50px 25px 25px 50px;
+    font-size: 13px;
+    gap: 12px;
+}
+
+#user p{
+    padding-right: 27px;
+}
+
+#icon_pessoa{
+    display: flex;
+    background-color: blanchedalmond;
+    padding: 10px;
+    background-color: var(--white);
+    border-radius: 50%;
+    
+}
+
+#pessoa{
+    width: 20px;
+    height: 20px;
+}
+
+#user2{
+    display: flex;
+    background-color: var(--black-2);
+    padding: 12px;
+    border-radius: 10px;
+}
+
+#pessoa2{
+    width: 15px;
+    height: 15px;
+}
+
 /* FIM - Header*/
 
 
@@ -95,5 +140,6 @@ footer {
 :root{
     --white: #fff;
     --black: #191919;
+    --black-2: #111111;
     --red: #c20a0a;
 }
