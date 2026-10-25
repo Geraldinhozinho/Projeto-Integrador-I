@@ -21,8 +21,8 @@
 /*Header*/
 
 header {
-    background-color: #191919;
-    color: #fff;
+    background-color: var(--black);
+    color: var(--white);
     padding: 1.3rem;
     width: 270px;
     flex-shrink: 0; 
@@ -44,7 +44,7 @@ header {
     height: 14px;
 }
 #icon{
-    border: 1px solid  rgba(255, 255, 255, 0.4);
+    border: var(--borda);
     display: flex;
     padding: 6px;
     border-radius: 5px;
@@ -85,7 +85,7 @@ header {
 
 #icon_pessoa{
     display: flex;
-    background-color: blanchedalmond;
+    background-color: var(--white);
     padding: 10px;
     background-color: var(--white);
     border-radius: 50%;
@@ -116,14 +116,25 @@ header {
   display: inline-block;
   width: 100%;
   max-width: 300px;
-  padding-top: 28px;
+  margin-top: 28px;
 
 }
 
 #search input {
   width: 100%;
   padding-left: 35px;
-  padding-bottom: 8px;
+  padding-top: 8px;
+  padding-bottom:8px;
+  border-radius: 8px;
+  border: var(--borda);
+  background-color: var(--black-3);
+}
+
+#search input:focus {
+  border: var(--borda-2);
+  outline: none;
+  box-shadow: none;
+  caret-color: var(--white);
 }
 
 #search img {
@@ -136,30 +147,7 @@ header {
   pointer-events: none; 
 }
 
-.input-container {
-  position: relative;
-  display: inline-block;
-  width: 100%;
-  max-width: 300px;
-}
 
-.input-container input {
-  width: 100%;
-  padding-left: 35px; /* Espaço para a imagem não cobrir o texto */
-  padding-top: 8px;
-  padding-bottom: 8px;
-  box-sizing: border-box;
-}
-
-.input-container img {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  pointer-events: none; /* Evita que o clique na imagem interfira no input */
-}
 /* FIM - Header*/
 
 
@@ -180,7 +168,7 @@ footer {
 }
 
 .footer-item {
-    background-color: #191919;
+    background-color: var(--black);
     width: 100px;
     height: 20px;
     margin: 1rem;
@@ -192,5 +180,9 @@ footer {
     --white: #fff;
     --black: #191919;
     --black-2: #111111;
+    --black-3: #262626;
     --red: #c20a0a;
+
+    --borda: 1px solid rgba(255, 255, 255, 0.4);
+    --borda-2: 1px solid rgba(255, 255, 255);
 }
