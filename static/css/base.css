@@ -204,7 +204,7 @@ nav ul {
     display: none;
     flex-direction: column;
     margin-left: 8px;
-    border-left: 1px solid var(--black-4);
+    border-left: var(--borda);
     padding-left: 15px;
     gap: 10px;
 
