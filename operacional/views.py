@@ -20,3 +20,6 @@ def agendas(request):
     agendas = Agenda.objects.all()
     context = {'agendas': agendas}
     return render(request, 'operacional/agendas.html', context)
+
+def frequencia(request):
+    return render(request, 'operacional/frequencia.html')
