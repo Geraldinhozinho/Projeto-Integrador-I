@@ -45,61 +45,89 @@
 
                 <nav>
                     <ul>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/home.svg' %}" alt="">Início
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/document.svg' %}" alt="">Documentos/Processos
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/user_teacher.svg' %}" alt="">Ensino
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/globo.svg' %}" alt="">Pesquisa
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/suitcase.svg' %}" alt="">Extenção
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/laptop.svg' %}" alt="">Tec. da Informação
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/concierge_bell.svg' %}" alt="">Central de Serviços
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/graduation_hat.svg' %}" alt="">Atividades Estudantis
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/mensage.svg' %}" alt="">Comunicação Social
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista">
-                                <img src="{% static 'img/metric.svg' %}" alt="">Des. Institucional
-                            </li>
-                        </a>
-                        <a class="links" href="">
-                            <li class="item_lista_unic">
-                                <img src="{% static 'img/exit.svg' %}" alt="">Sair
-                            </li>
-                        </a>
+                        <li class="item_lista">
+                            <div class="sub_item">
+                                <a class="links" href="">
+                                    <img src="{% static 'img/home.svg' %}" alt="">
+                                    <p>Início</p>
+                                </a>
+                                
+                            </div>
+                        </li>
+                        <li class="item_lista">
+                            <div class="sub_item">
+                                <button class="links"  onclick="expandir('opcoes1')">
+                                    <img src="{% static 'img/user_grey.svg' %}" alt="">
+                                    <p>Bolsista</p>
+                                </button>
+                                <div id="opcoes1">
+                                    <a href="#">Minhas Tarefas</a>
+                                    <a href="#">Minhas Frequências</a>
+                                    <a href="#">Meus comprovantes mensais</a>
+                                    <a href="#">Minha Agenda</a>
+                                </div>
+                            </div>
+                        </li>
+                        <!-- <li class="item_lista">
+                            <a class="links" href="">
+                                <img src="{% static 'img/document.svg' %}" alt="">
+                                <p>Documentos/Processos</p>
+                            </a>
+                        </li>
+                        <li class="item_lista">
+                            <a class="links" href="">
+                                <img src="{% static 'img/user_teacher.svg' %}" alt="">
+                                <p>Ensino</p>
+                            </a>
+                        </li>
+                        <li class="item_lista">
+                            <a class="links" href="">
+                                <img src="{% static 'img/globo.svg' %}" alt="">
+                                <p>Pesquisa</p>
+                            </a>
+                        </li>
+                        <li class="item_lista">
+                            <a class="links" href="">
+                                <img src="{% static 'img/suitcase.svg' %}" alt="">
+                                <p>Extenção</p>
+                            </a>
+                        </li>
+                        <li class="item_lista">
+                            <a class="links" href="">
+                                <img src="{% static 'img/laptop.svg' %}" alt="">
+                                <p>Tec. da Informação</p>
+                            </a>
+                        </li>
+                        <li class="item_lista">
+                            <a class="links" href="">
+                                <img src="{% static 'img/concierge_bell.svg' %}" alt="">
+                                <p>Central de Serviços</p>
+                            </a>
+                        </li>
+                        <li class="item_lista">
+                            <a class="links" href="">
+                                <img src="{% static 'img/graduation_hat.svg' %}" alt="">
+                                <p>Atividades Estudantis</p>
+                            </a>
+                        </li>
+                        <li class="item_lista">
+                            <a class="links" href="">
+                                <img src="{% static 'img/mensage.svg' %}" alt="">
+                                <p>Comunicação Social</p>
+                            </a>
+                        </li>
+                        <li class="item_lista">
+                            <a class="links" href="">
+                                <img src="{% static 'img/metric.svg' %}" alt="">
+                                <p>Des. Institucional</p>
+                            </a>
+                        </li> -->
+                        <li class="item_lista_unic">
+                            <a class="links" href="">
+                                <img src="{% static 'img/exit.svg' %}" alt="">
+                                <p>Sair</p>
+                            </a>
+                        </li>
 
 
                     </ul>
@@ -121,6 +149,7 @@
             </div>
         </div>
     </div>
+    <script src="{% static 'js/base.js' %}"></script>
 </body>
 
 </html>
