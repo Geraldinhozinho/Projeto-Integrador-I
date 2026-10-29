@@ -17,7 +17,7 @@ class Agenda(models.Model):
     data = models.DateField()
     descricao = models.TextField()
     bolsista = models.ForeignKey(Bolsista, on_delete=models.CASCADE)
-    #supervisor = models.ForeignKey(Supervisor, on_delete=models.CASCADE)
+    supervisor = models.ForeignKey(Supervisor, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.data} - {self.titulo} - {self.bolsista.nome}"
@@ -30,10 +30,34 @@ class Bolsa(models.Model):
     data_inicio = models.DateField()
     data_fim = models.DateField()
     bolsista = models.ForeignKey(Bolsista, on_delete=models.CASCADE)
-    #supervisor = models.ForeignKey(Supervisor, on_delete=models.CASCADE)
+    supervisor = models.ForeignKey(Supervisor, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.nome
+
+class Relatorio_de_Frequencia(models.Model):
+    mes = models.IntegerField()
+    ano = models.IntegerField()
+    horas_trabalhadas = models.IntegerField()
+    observacao = models.IntegerField(blank=True, null=True)
+    data_envio = models.DateField()
+    aprovado = models.BoleanField(default=False)
+    bolsista = models.ForeignKey(Bolsista, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.mes}/{self.ano} - {self.bolsista.nome}"
+
+class Tarefas(models.Model):
+    titulo = models.CharField(max_length=100)
+    descricao = models.TextField()
+    data_inicio = models.DateField()
+    data_fim = models.DateField()
+    status = models.CharField(max_length=50)
+    bolsista = models.ForeignKey(Bolsista, on_delete=models.CASCADE)
+    supervisor = models.ForeignKey(Supervisor, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.titulo
     
 class Supervisor(models.Model):
     nome = models.CharField(max_length=100)
