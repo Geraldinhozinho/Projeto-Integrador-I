@@ -9,7 +9,7 @@
 }
 
 .breadcrumb {
-    color: #888;
+    color: #777777;
     font-size: 10px;
     margin: 0 0 7px 7px;
 }
@@ -25,14 +25,13 @@
     margin: 0 0 12px 7px;
     font-size: 12px;
     font-weight: 700;
-    color: #555;
+    color: #595959;
 }
 
 .tabela-container {
     width: 100%;
     overflow-x: auto;
     border-radius: 11px;
-    background-color: #f1f1f1;
 }
 
 .tabela-frequencia {
@@ -41,19 +40,18 @@
     border-collapse: separate;
     border-spacing: 1px;
     table-layout: auto;
-    background-color: #fff;
+    background-color: #FFFFFF;
 }
 
 .tabela-frequencia thead th {
-    border: 1px solid #fff;
+    border: 1px solid #FFFFFF;
     padding: 8px 6px;
-    background-color: #e5e5e5;
-    color: #111;
+    background-color: #E6E6E6;
     font-size: 10px;
     font-weight: 700;
     text-align: center;
     white-space: nowrap;
-    border-bottom: 1px solid #fff;
+    border-bottom: 1px solid #FFFFFF;
 }
 
 .tabela-frequencia thead th:first-child {
@@ -68,9 +66,8 @@
     height: 25px;
     padding: 3px 6px;
     box-sizing: border-box;
-    background-color: #f1f1f1;
-    border: 1px solid #fff;
-    color: #222;
+    background-color: #F2F2F2;
+    border: 1px solid #FFFFFF;
     font-size: 10px;
     text-align: center;
     white-space: nowrap;
@@ -85,7 +82,7 @@
 }
 
 .tabela-frequencia tbody tr:hover td {
-    background-color: #eaeaea;
+    background-color: #F2F2F2;
 }
 
 .tabela-frequencia .assinatura {
@@ -97,7 +94,7 @@
 }
 
 .tabela-frequencia .documento a {
-    color: #008577;
+    color: #0A7F70;
     text-decoration: none;
 }
 
@@ -106,20 +103,20 @@
 }
 
 .tabela-frequencia .opcoes a {
-    color: #008577;
+    color: #0A7F70;
     text-decoration: none;
 }
 
 .sem-registros {
     height: 60px;
-    color: #777;
+    color: #E6E6E6;
     text-align: center;
 }
 
 .etiqueta-status {
     display: inline-block;
-    padding: 2px 7px;
-    border: 1px solid #c9c9c9;
+    padding: 2px 7px 1px;
+    border: 1px solid #FFFFFF;
     border-radius: 12px;
     font-size: 9px;
     line-height: 1.3;
@@ -127,21 +124,18 @@
 }
 
 .etiqueta-status-ausente {
-    background-color: #ffdada;
-    border-color: #f2a3a3;
-    color: #a32d2d;
+    background-color: #FCCFCF;
+    border-color: #FF9999;
 }
 
 .etiqueta-status-observacao {
-    background-color: #e9e9e9;
-    border-color: #bdbdbd;
-    color: #333;
+    background-color: #E6E6E6;
+    border-color: #B3B3B3;
 }
 
 .etiqueta-status-status {
-    background-color: #d5f3ff;
-    border-color: #70c9ed;
-    color: #00769d;
+    background-color: #CCEFFF;
+    border-color: #66D0FF;
 }
 
 .comprovante {
@@ -215,19 +209,4 @@
     flex-shrink: 0;
     object-fit: contain;
     align-self: center;
-}
-
-.qr-code-placeholder {
-    display: flex;
-    width: 100px;
-    height: 100px;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    align-self: center;
-    background-color: #eee;
-    border: 1px dashed #999;
-    color: #555;
-    font-size: 14px;
-    font-weight: bold;
 }

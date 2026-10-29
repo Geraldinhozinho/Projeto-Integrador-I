@@ -169,7 +169,9 @@
                     </td>
 
                     <td class="assinatura">
-                        Ausente
+                        <span class="etiqueta-status etiqueta-status-ausente">
+                            Ausente
+                        </span>
                     </td>
 
                     <td>
@@ -329,10 +331,7 @@
                      src="{{ qr_code_url }}"
                      alt="QR Code de autenticação do documento">
             {% else %}
-                <div class="qr-code-placeholder"
-                     aria-label="QR Code ilustrativo">
-                    QR
-                </div>
+                <img class="qr-code" src="{% static 'img/qr-code.png' %}"
             {% endif %}
         </div>
     </section>
