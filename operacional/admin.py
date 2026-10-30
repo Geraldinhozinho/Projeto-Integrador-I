@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Bolsa, Bolsista, Agenda, Programa, Projeto, Supervisor, Vinculo_bolsista_bolsa, Setor  
+from .models import Bolsa, Bolsista, Agenda, Programa, Projeto, Supervisor, Vinculo_bolsista_bolsa, Setor, Frequencia, Justificativa, Historico
 # Register your models here.
 
     
@@ -43,3 +43,20 @@ class VinculoBolsistaBolsaAdmin(admin.ModelAdmin):
 class SetorAdmin(admin.ModelAdmin):
     list_display = ('nome',)
     search_fields = ('nome',)
+
+@admin.register(Frequencia)
+class FrequenciaAdmin(admin.ModelAdmin):
+    list_display = ('data', 'bolsista', 'hora_entrada', 'hora_saida', 'status', 'assinatura')
+    list_filter = ('data', 'status', 'assinatura')
+    search_fields = ('bolsista__nome',)
+    ordering = ('-data',)
+    
+@admin.register(Justificativa)
+class JustificativaAdmin(admin.ModelAdmin):
+    list_display = ('data_inicio', 'data_final', 'motivo', 'status', 'bolsista')
+    list_filter = ('status', 'bolsista')
+    search_fields = ('data_inicio', 'data_final', 'motivo', 'bolsista__nome')
+
+@admin.register(Historico)    
+class HistoricoAdmin(admin.ModelAdmin):
+    list_display = ('frequencia', 'usuario_responsavel', 'alteracao')

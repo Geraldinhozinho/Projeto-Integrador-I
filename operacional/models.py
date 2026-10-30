@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 # Create your models here.
 
@@ -75,4 +76,113 @@ class Agenda(models.Model):
 
     def __str__(self):
         return f"{self.data} - {self.titulo} - {self.bolsista.nome}"
-    
+
+class Justificativa(models.Model):
+    STATUS_CHOICES = [
+        ('PENDENTE', 'Pendente'),
+        ('APROVADA', 'Aprovada'),
+        ('REJEITADA', 'Rejeitada'),
+    ]
+
+    data_inicio = models.DateField()
+    data_final = models.DateField()
+    motivo = models.TextField()
+    informacao_complementar = models.TextField(blank=True)
+    anexo = models.FileField(upload_to='justificativas/', null=True, blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='PENDENTE')
+    frequencia = models.ForeignKey('Frequencia', on_delete=models.CASCADE, related_name='justificativa', null=True, blank=True)
+    bolsista = models.ForeignKey('Bolsista', on_delete=models.CASCADE, related_name='justificativas')
+
+    def __str__(self):
+        return f"{self.data_inicio} - {self.data_final} - {self.motivo}"
+
+    def cadastrar_justificativa(self):
+        self.status = 'PENDENTE'
+        self.save()
+
+    def validar_justificativa(self, aprovado):
+        if aprovado:
+            self.status = 'APROVADA'
+        else:
+            self.status = 'REJEITADA'
+        self.save()
+
+
+class Frequencia(models.Model):
+    STATUS_CHOICES = [
+        ('EM_ABERTO', 'Em Aberto'),
+        ('CONCLUIDA', 'Concluída'),
+        ('FALTA', 'Falta'),
+        ('JUSTIFICADA', 'Justificada'),
+    ]
+
+    data = models.DateField()
+    hora_entrada = models.TimeField(null=True, blank=True)
+    hora_saida = models.TimeField(null=True, blank=True)
+    assinatura = models.BooleanField(default=False)
+    observacao = models.TextField(blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='EM_ABERTO')
+    documentos = models.FileField(upload_to='documentos_frequencia/', null=True, blank=True)
+    bolsista = models.ForeignKey('Bolsista', on_delete=models.CASCADE, related_name='frequencias')
+
+    class Meta:
+        ordering = ['-data']
+
+    def __str__(self):
+        return f"{self.data} - {self.bolsista.nome}"
+
+    def registrar_frequencia(self, bolsista):
+        hoje = timezone.now().date()
+        agora = timezone.now().time()
+
+        freq_hoje = Frequencia.objects.filter(bolsista=bolsista, data=hoje).first()
+
+        if not freq_hoje:
+            self.bolsista = bolsista
+            self.data = hoje
+            self.hora_entrada = agora
+            self.status = 'EM_ABERTO'
+            self.save()
+            return "Entrada registrada com sucesso!"
+        else:
+            freq_hoje.hora_saida = agora
+            freq_hoje.status = 'CONCLUIDA'
+            freq_hoje.save()
+            return "Saída registrada com sucesso!"
+
+    def ajustar_frequencia(self, hora_saida, usuario_responsavel, justificativa):
+        """Ajusta a frequência manualmente (supervisor) e registra no histórico"""
+        hora_saida_anterior = self.hora_saida
+
+        self.hora_saida = hora_saida
+        self.status = 'CONCLUIDA'
+        self.save()
+
+        Historico.objects.create(
+            frequencia=self,
+            usuario_responsavel=usuario_responsavel,
+            alteracao=f"Horário de saída ajustado de {hora_saida_anterior} para {hora_saida}. Motivo: {justificativa}"
+        )
+
+    def assinar_frequencia(self):
+        self.assinatura = True
+        self.save()
+
+    def ver_frequencia(self):
+        return f"Data: {self.data} | Entrada: {self.hora_entrada} | Saída: {self.hora_saida} | Status: {self.status}"
+
+
+class Historico(models.Model):
+    data_hora = models.DateTimeField(auto_now_add=True)
+    alteracao = models.TextField()
+    frequencia = models.ForeignKey(Frequencia, on_delete=models.CASCADE, related_name='historico')
+    usuario_responsavel = models.CharField(max_length=100)
+
+    class Meta:
+        ordering = ['-data_hora']
+
+    def __str__(self):
+        return f"{self.data_hora} - {self.alteracao}"
+
+    def ver_historico(self):
+        return f"Data/Hora: {self.data_hora} | Alteração: {self.alteracao} | Responsável: {self.usuario_responsavel}"
