@@ -5,337 +5,240 @@
 <link rel="stylesheet" href="{% static 'css/frequencia.css' %}">
 
 <div class="frequencia-page">
-
     <div class="breadcrumb">
-        Início > Bolsista > Meus Comprovantes Mensais > Detalhar
+        Início > {% if user.is_staff %}Supervisor{% else %}Bolsista{% endif %} > Frequência > Meus Registros
     </div>
 
     <h1 class="frequencia-titulo">Frequência</h1>
+    <h2 class="frequencia-subtitulo">
+        {% if user.is_staff %}Registros dos Bolsistas{% else %}Meus registros{% endif %}
+    </h2>
 
-    <h2 class="frequencia-subtitulo">Meus registros</h2>
+    <!-- AÇÕES RÁPIDAS (Adicionado para o Bolsista) -->
+    {% if not user.is_staff %}
+    <div class="acoes-rapidas" style="margin-bottom: 20px; display: flex; gap: 10px;">
+        <button type="button" onclick="abrirScanner()" class="btn btn-primary">
+            📷 Escanear QR Code (Ponto no Campus)
+        </button>
+        <button type="button" onclick="registrarPontoWeb()" class="btn btn-success">
+            💻 Registrar Ponto Web (Home Office)
+        </button>
+    </div>
+    {% endif %}
 
     <div class="tabela-container">
         <table class="tabela-frequencia">
             <thead>
                 <tr>
+                    {% if user.is_staff %}
+                    <th>Bolsista</th>
+                    {% endif %}
                     <th>Data</th>
                     <th>Entrada</th>
                     <th>Saída</th>
-                    <th>Assinatura do bolsista</th>
-                    <th>Observação</th>
+                    {% if not user.is_staff %}
+                    <th>Assinatura</th>
+                    {% endif %}
                     <th>Status</th>
-                    <th>Documentos anexados</th>
-                    <th>Opções</th>
+                    <th>Observação</th>
+                    <th>Documentos</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
 
-<!-- apague essa parte de baixo quando o modelo estiver pronto-->
             <tbody>
-                <tr>
-                    <td>11/11/2000</td>
-
-                    <td>
-                        11:11
-                    </td>
-
-                    <td>
-                        16:16
-                    </td>
-
+                {% for freq in frequencias %}
+                <tr class="{% if freq.status == 'EM_ABERTO' %}linha-em-aberto{% endif %}">
+                    {% if user.is_staff %}
+                    <td>{{ freq.bolsista.nome }}</td>
+                    {% endif %}
+                    
+                    <td>{{ freq.data|date:"d/m/Y" }}</td>
+                    <td>{{ freq.hora_entrada|time:"H:i"|default:"--:--" }}</td>
+                    <td>{{ freq.hora_saida|time:"H:i"|default:"--:--" }}</td>
+                    
+                    {% if not user.is_staff %}
                     <td class="assinatura">
-                        Ausente
+                        {% if freq.assinatura %}
+                            <span class="etiqueta-status etiqueta-assinado">Assinado</span>
+                        {% else %}
+                            <span class="etiqueta-status etiqueta-nao-assinado">Pendente</span>
+                        {% endif %}
                     </td>
-
+                    {% endif %}
+                    
                     <td>
-                        sim
-                    </td>
-
-                    <td>
-                        <span class="etiqueta-status etiqueta-status-status">
-                            Ausente
+                        <span class="etiqueta-status etiqueta-{{ freq.status|lower }}">
+                            {{ freq.get_status_display }}
                         </span>
                     </td>
-
+                    
+                    <td>{{ freq.observacao|truncatechars:30|default:"-" }}</td>
+                    
                     <td class="documento">
-                        <a href="#"
-                            target="_blank"
-                            rel="noopener noreferrer">
-                            documentos
-                        </a>
+                        {% if freq.documentos %}
+                            <a href="{{ freq.documentos.url }}" target="_blank">Anexo</a>
+                        {% else %}
+                            -
+                        {% endif %}
                     </td>
-
+                    
                     <td class="opcoes">
-                        <a href="#"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           title="Visualizar documento">
-                            Visualizar
-                            </a>
-                    </td>
-                </tr>
-<tr>
-                    <td>11/11/2000</td>
-
-                    <td>
-                        11:11
-                    </td>
-
-                    <td>
-                        16:16
-                    </td>
-
-                    <td class="assinatura">
-                        Ausente
-                    </td>
-
-                    <td>
-                        sim
-                    </td>
-
-                    <td>
-                        <span class="etiqueta-status etiqueta-status-status">
-                            Ausente
-                        </span>
-                    </td>
-
-                    <td class="documento">
-                        <a href="#"
-                            target="_blank"
-                            rel="noopener noreferrer">
-                            documentos
-                        </a>
-                    </td>
-
-                    <td class="opcoes">
-                        <a href="#"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           title="Visualizar documento">
-                            Visualizar
-                            </a>
-                    </td>
-                </tr>
-<tr>
-                    <td>11/11/2000</td>
-
-                    <td>
-                        11:11
-                    </td>
-
-                    <td>
-                        16:16
-                    </td>
-
-                    <td class="assinatura">
-                        Ausente
-                    </td>
-
-                    <td>
-                        sim
-                    </td>
-
-                    <td>
-                        <span class="etiqueta-status etiqueta-status-status">
-                            Ausente
-                        </span>
-                    </td>
-
-                    <td class="documento">
-                        <a href="#"
-                            target="_blank"
-                            rel="noopener noreferrer">
-                            documentos
-                        </a>
-                    </td>
-
-                    <td class="opcoes">
-                        <a href="#"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           title="Visualizar documento">
-                            Visualizar
-                            </a>
-                    </td>
-                </tr>
-<tr>
-                    <td>11/11/2000</td>
-
-                    <td>
-                        11:11
-                    </td>
-
-                    <td>
-                        16:16
-                    </td>
-
-                    <td class="assinatura">
-                        <span class="etiqueta-status etiqueta-status-ausente">
-                            Ausente
-                        </span>
-                    </td>
-
-                    <td>
-                        sim
-                    </td>
-
-                    <td>
-                        <span class="etiqueta-status etiqueta-status-status">
-                            Ausente
-                        </span>
-                    </td>
-
-                    <td class="documento">
-                        <a href="#"
-                            target="_blank"
-                            rel="noopener noreferrer">
-                            documentos
-                        </a>
-                    </td>
-
-                    <td class="opcoes">
-                        <a href="#"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           title="Visualizar documento">
-                            Visualizar
-                            </a>
-                    </td>
-                </tr>
-            </tbody>
-           
-
-            <!--<tbody>
-                {% for registro in registros %}
-                <tr>
-                    <td>{{ registro.data|date:"d/m/Y" }}</td>
-
-                    <td>
-                        {% if registro.entrada %}
-                            {{ registro.entrada|time:"H:i:s" }}
-                        {% endif %}
-                    </td>
-
-                    <td>
-                        {% if registro.saida %}
-                            {{ registro.saida|time:"H:i:s" }}
-                        {% endif %}
-                    </td>
-
-                    <td class="assinatura">
-                        {% if registro.assinatura %}
-                            {{ registro.assinatura }}
-                        {% endif %}
-
-                        {% if registro.ausente %}
-                            <span class="etiqueta-status etiqueta-status-ausente">
-                                Ausente
-                            </span>
-                        {% endif %}
-                    </td>
-
-                    <td>
-                        {% if registro.observacao %}
-                            <span class="etiqueta-status etiqueta-status-observacao">
-                                {{ registro.observacao }}
-                            </span>
-                        {% endif %}
-                    </td>
-
-                    <td>
-                        {% if registro.status %}
-                            <span class="etiqueta-status etiqueta-status-status">
-                                {{ registro.status }}
-                            </span>
-                        {% endif %}
-                    </td>
-
-                    <td class="documento">
-                        {% if registro.documento %}
-                            <a href="{{ registro.documento.url }}"
-                               target="_blank"
-                               rel="noopener noreferrer">
-                                {{ registro.documento.name|cut:"requisicoes_docs/" }}
-                            </a>
-                        {% endif %}
-                    </td>
-
-                    <td class="opcoes">
-                        {% if registro.documento %}
-                            <a href="{{ registro.documento.url }}"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               title="Visualizar documento">
-                                Visualizar
-                            </a>
+                        {% if user.is_staff %}
+                            <a href="{% url 'ajustar_frequencia' freq.pk %}" class="btn-link">Ajustar</a>
+                            <a href="{% url 'historico_frequencia' freq.pk %}" class="btn-link">Histórico</a>
+                        {% else %}
+                            {% if freq.status == 'FALTA' %}
+                                <a href="{% url 'criar_justificativa' freq.pk %}" class="btn-link">Justificar</a>
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>
-
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="sem-registros">
-                        Nenhum registro de frequência encontrado.
+                    <td colspan="{% if user.is_staff %}9{% else %}8{% endif %}" class="sem-registros">
+                        Nenhum registro encontrado.
                     </td>
                 </tr>
                 {% endfor %}
-            </tbody> -->
+            </tbody>
         </table>
     </div>
 
+    {% if assinatura_disponivel %}
     <section class="comprovante">
-
-        <div class="comprovante-cabecalho">
-            Documento assinado eletronicamente por:
-        </div>
-
+        <div class="comprovante-cabecalho">Documento assinado eletronicamente por:</div>
         <ul class="assinatura-eletronica">
             <li>
-                <strong>
-                    {{ supervisor.nome|default:"Supervisor Supervisor" }}
-                    - {{ supervisor.matricula|default:"000000" }}
-                    - Docente
-                </strong>,
-                em {{ data_assinatura|date:"d/m/Y H:i"|default:"01/09/2026 14:47" }}
+                <strong>{{ supervisor.nome }} - {{ supervisor.matricula }} - Docente</strong>,
+                em {{ data_assinatura|date:"d/m/Y H:i" }}
             </li>
         </ul>
-
         <div class="comprovante-conteudo">
             <div class="comprovante-texto">
                 <p>
-                    Este documento foi emitido pelo Ponto de frequencia em
-                    {{ data_emissao|date:"d/m/Y"|default:"00/00/0000" }},
-                    para comprovar sua autenticidade faça a leitura do
-                    QRCode ao lado ou acesse
-                    <a href="#"
-                       target="_blank"
-                       rel="noopener noreferrer">
-                        https://ponto-de-frequencia-documentos
-                    </a>
-                    e forneça os dados abaixo:
+                    Este documento foi emitido pelo Módulo de Gestão de Bolsistas em
+                    {{ data_emissao|date:"d/m/Y" }}, para comprovar sua autenticidade 
+                    faça a leitura do QRCode ao lado.
                 </p>
-
                 <div class="codigos-autenticacao">
-                    <p>
-                        <strong>Código Verificador:</strong>
-                        {{ codigo_verificador|default:"000000" }}
-                    </p>
-                    <p>
-                        <strong>Código de Autenticação:</strong>
-                        {{ codigo_autenticacao|default:"ab0ccd0c40" }}
-                    </p>
+                    <p><strong>Código Verificador:</strong> {{ codigo_verificador }}</p>
+                    <p><strong>Código de Autenticação:</strong> {{ codigo_autenticacao }}</p>
                 </div>
             </div>
-
             {% if qr_code_url %}
-                <img class="qr-code"
-                     src="{{ qr_code_url }}"
-                     alt="QR Code de autenticação do documento">
-            {% else %}
-                <img class="qr-code" src="{% static 'img/qr-code.png' %}"
+                <img class="qr-code" src="{{ qr_code_url }}" alt="QR Code">
             {% endif %}
         </div>
     </section>
-
+    {% endif %}
 </div>
 
+<!-- MODAL DO SCANNER (Adicionado: é aqui que a câmera vai abrir) -->
+<div id="scanner-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; position: relative;">
+        <h3 style="margin-top: 0;">Escanear QR Code</h3>
+        <p style="font-size: 0.9em; color: #666;">Aponte a câmera para o monitor da COADE</p>
+        
+        <input type="text" id="matricula-input" placeholder="Digite sua matrícula" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        
+        <div id="reader" style="width: 100%; border-radius: 4px; overflow: hidden; margin: 10px 0;"></div>
+        
+        <div id="scanner-feedback" style="margin: 10px 0; font-weight: bold; min-height: 20px;"></div>
+        
+        <button type="button" onclick="fecharScanner()" class="btn btn-danger" style="margin-top: 10px;">Fechar Câmera</button>
+    </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+    let html5QrCode;
+    let isScanning = false;
+
+    function abrirScanner() {
+        document.getElementById('scanner-modal').style.display = 'flex';
+        iniciarCamera();
+    }
+
+    function fecharScanner() {
+        document.getElementById('scanner-modal').style.display = 'none';
+        if (html5QrCode) {
+            html5QrCode.stop().catch(err => console.log(err));
+        }
+        document.getElementById('scanner-feedback').innerText = "";
+        document.getElementById('matricula-input').value = "";
+        isScanning = false;
+    }
+
+    function iniciarCamera() {
+        if (isScanning) return;
+        isScanning = true;
+        
+        html5QrCode = new Html5Qrcode("reader");
+        
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            onScanSuccess,
+            () => {} 
+        ).catch(err => {
+            document.getElementById('scanner-feedback').innerText = "Erro ao acessar câmera. Verifique as permissões.";
+            document.getElementById('scanner-feedback').style.color = "red";
+            isScanning = false;
+        });
+    }
+
+    async function onScanSuccess(decodedText) {
+        if (!isScanning) return;
+        isScanning = false; // Evita leituras duplicadas
+        
+        const matricula = document.getElementById('matricula-input').value.trim();
+        const feedback = document.getElementById('scanner-feedback');
+        
+        if (!matricula) {
+            feedback.innerText = "Por favor, digite sua matrícula primeiro.";
+            feedback.style.color = "red";
+            isScanning = true;
+            return;
+        }
+
+        feedback.innerText = "Processando...";
+        feedback.style.color = "blue";
+
+        try {
+            const response = await fetch('/frequencia/registrar-qr/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ token: decodedText, matricula: matricula })
+            });
+
+            const data = await response.json();
+
+            if (data.sucesso) {
+                feedback.innerText = `✅ ${data.mensagem}`;
+                feedback.style.color = "green";
+                html5QrCode.stop();
+                setTimeout(() => {
+                    location.reload(); 
+                }, 2000);
+            } else {
+                feedback.innerText = `❌ ${data.mensagem}`;
+                feedback.style.color = "red";
+                isScanning = true; 
+            }
+        } catch (error) {
+            feedback.innerText = "Erro de conexão com o servidor.";
+            feedback.style.color = "red";
+            isScanning = true;
+        }
+    }
+
+    function registrarPontoWeb() {
+        alert("Funcionalidade de Ponto Web (Home Office) - Em desenvolvimento para a próxima entrega.");
+    }
+</script>
 {% endblock %}

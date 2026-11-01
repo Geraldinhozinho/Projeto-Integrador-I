@@ -1,8 +1,6 @@
 from django.db import models
 from django.utils import timezone
 
-# Create your models here.
-
 class Setor(models.Model):
     nome = models.CharField(max_length=100)
 
@@ -124,16 +122,21 @@ class Frequencia(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='EM_ABERTO')
     documentos = models.FileField(upload_to='documentos_frequencia/', null=True, blank=True)
     bolsista = models.ForeignKey('Bolsista', on_delete=models.CASCADE, related_name='frequencias')
-
+    token_qr = models.CharField(max_length=255, null=True, blank=True)
+    
     class Meta:
         ordering = ['-data']
+        unique_together = ['bolsista', 'data'] 
 
     def __str__(self):
         return f"{self.data} - {self.bolsista.nome}"
 
-    def registrar_frequencia(self, bolsista):
+    def registrar_frequencia(self, bolsista, token):
         hoje = timezone.now().date()
         agora = timezone.now().time()
+
+        if Frequencia.objects.filter(token_qr=token).exists():
+            return None, "Este QR Code já foi utilizado. Solicite um novo ao monitor."
 
         freq_hoje = Frequencia.objects.filter(bolsista=bolsista, data=hoje).first()
 
@@ -142,14 +145,20 @@ class Frequencia(models.Model):
             self.data = hoje
             self.hora_entrada = agora
             self.status = 'EM_ABERTO'
+            self.token_qr = token  
             self.save()
-            return "Entrada registrada com sucesso!"
-        else:
+            return self, "Entrada registrada com sucesso!"
+        
+        elif freq_hoje.status == 'EM_ABERTO':
             freq_hoje.hora_saida = agora
             freq_hoje.status = 'CONCLUIDA'
+            freq_hoje.token_qr = token  
             freq_hoje.save()
-            return "Saída registrada com sucesso!"
-
+            return freq_hoje, "Saída registrada com sucesso!"
+        
+        else:
+            return freq_hoje, "Você já registrou entrada e saída hoje. Não é possível registrar novamente."
+        
     def ajustar_frequencia(self, hora_saida, usuario_responsavel, justificativa):
         """Ajusta a frequência manualmente (supervisor) e registra no histórico"""
         hora_saida_anterior = self.hora_saida

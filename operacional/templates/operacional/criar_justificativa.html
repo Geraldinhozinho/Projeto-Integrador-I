@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main %}
+<link rel="stylesheet" href="{% static 'css/justificativa.css' %}">
+
+<div class="justificativa-page">
+
+    <h1 class="page-title">Cadastrar Justificativa de Falta</h1>
+
+    {% if frequencia %}
+    <div class="alert-info">
+        <strong>Falta referente a:</strong> {{ frequencia.data|date:"d/m/Y" }}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="form-justificativa">
+        {% csrf_token %}
+
+        <fieldset class="form-section">
+            <legend>Dados Gerais</legend>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="data_inicio">
+                        <span class="required">*</span> Data de Início
+                    </label>
+                    <input type="date" 
+                           id="data_inicio" 
+                           name="data_inicio" 
+                           required
+                           {% if form.data_inicio.value %}value="{{ form.data_inicio.value }}"{% endif %}>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_final">
+                        <span class="required">*</span> Data Final
+                    </label>
+                    <input type="date" 
+                           id="data_final" 
+                           name="data_final" 
+                           required
+                           {% if form.data_final.value %}value="{{ form.data_final.value }}"{% endif %}>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="quantidade_dias">
+                    <span class="required">*</span> Quantidade de Dias
+                </label>
+                <input type="number" 
+                       id="quantidade_dias" 
+                       name="quantidade_dias" 
+                       min="1" 
+                       readonly
+                       class="input-readonly">
+            </div>
+
+            <div class="alert-warning" id="alert-15-dias" style="display: none;">
+                Caso sua ausência ultrapasse 15 dias, contate seu supervisor geral.
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Detalhamento</legend>
+            
+            <div class="form-group">
+                <label for="motivo">
+                    <span class="required">*</span> Motivo
+                </label>
+                <select id="motivo" name="motivo" required>
+                    <option value="">Selecione...</option>
+                    <option value="MEDICO" {% if form.motivo.value == 'MEDICO' %}selected{% endif %}>Atestado Médico</option>
+                    <option value="PESSOAL" {% if form.motivo.value == 'PESSOAL' %}selected{% endif %}>Motivo Pessoal</option>
+                    <option value="ACADEMICO" {% if form.motivo.value == 'ACADEMICO' %}selected{% endif %}>Compromisso Acadêmico</option>
+                    <option value="FAMILIA" {% if form.motivo.value == 'FAMILIA' %}selected{% endif %}>Problema Familiar</option>
+                    <option value="OUTRO" {% if form.motivo.value == 'OUTRO' %}selected{% endif %}>Outro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="informacao_complementar">Informação Complementar</label>
+                <textarea id="informacao_complementar" 
+                          name="informacao_complementar" 
+                          rows="6"
+                          placeholder="Descreva detalhes adicionais sobre a justificativa...">{% if form.informacao_complementar.value %}{{ form.informacao_complementar.value }}{% endif %}</textarea>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Anexos</legend>
+            
+            <div class="form-group">
+                <label for="anexo">
+                    <span class="required">*</span> Anexo
+                </label>
+                <input type="file" 
+                       id="anexo" 
+                       name="anexo" 
+                       accept=".pdf,.jpg,.jpeg,.png"
+                       required>
+                <small class="form-help">
+                    Tamanho máximo permitido: 10MB. Tipos de arquivo: PDF, JPG, PNG
+                </small>
+                {% if form.anexo.errors %}
+                    <div class="error-message">{{ form.anexo.errors }}</div>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success">Salvar</button>
+            <a href="{% url 'frequencia' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Calcula quantidade de dias automaticamente
+    const dataInicio = document.getElementById('data_inicio');
+    const dataFinal = document.getElementById('data_final');
+    const quantidadeDias = document.getElementById('quantidade_dias');
+    const alert15Dias = document.getElementById('alert-15-dias');
+
+    function calcularDias() {
+        if (dataInicio.value && dataFinal.value) {
+            const inicio = new Date(dataInicio.value);
+            const fim = new Date(dataFinal.value);
+            const diffTime = Math.abs(fim - inicio);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            
+            quantidadeDias.value = diffDays;
+            
+            if (diffDays > 15) {
+                alert15Dias.style.display = 'block';
+            } else {
+                alert15Dias.style.display = 'none';
+            }
+        }
+    }
+
+    dataInicio.addEventListener('change', calcularDias);
+    dataFinal.addEventListener('change', calcularDias);
+</script>
+{% endblock %}
