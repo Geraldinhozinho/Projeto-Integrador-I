@@ -245,7 +245,7 @@
     background-color: var(--white);
     padding: 20px;
     border-radius: 8px;
-    border: var(--borda-white);
+    border: var(--borda-grey-2);
 }
 
 .card-titulo {
@@ -302,9 +302,18 @@
     border-radius: 8px;
 }
 
-.bg-cinza { background-color: var(--white-3); }
-.bg-verde { background-color: rgb(212, 237, 218); } /* Fundo verde claro */
-.bg-vermelho { background-color: rgb(248, 215, 218); } /* Fundo vermelho claro */
+.bg-cinza { 
+    background-color: var(--white-3);
+    border: var(--borda-white);
+}
+.bg-verde { 
+    background-color: var(--green-4); 
+    border: var(--borda-green);
+}
+.bg-vermelho { 
+    background-color: var(--red-4); 
+    border: var(--borda-red);
+}
 
 .numero-resumo {
     font-size: 32px;
