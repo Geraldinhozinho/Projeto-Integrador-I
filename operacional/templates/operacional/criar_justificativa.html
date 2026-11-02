@@ -8,12 +8,6 @@
 
     <h1 class="page-title">Cadastrar Justificativa de Falta</h1>
 
-    {% if frequencia %}
-    <div class="alert-info">
-        <strong>Falta referente a:</strong> {{ frequencia.data|date:"d/m/Y" }}
-    </div>
-    {% endif %}
-
     <form method="post" enctype="multipart/form-data" class="form-justificativa">
         {% csrf_token %}
 

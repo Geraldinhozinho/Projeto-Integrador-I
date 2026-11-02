@@ -423,25 +423,37 @@ def criar_justificativa(request, frequencia_pk=None):
         informacao_complementar = request.POST.get('informacao_complementar', '')
         anexo = request.FILES.get('anexo')
         
-        if frequencia_pk:
-            frequencia = get_object_or_404(Frequencia, pk=frequencia_pk)
-            bolsista = frequencia.bolsista
-        else:
-            bolsista = get_object_or_404(Bolsista, id=request.POST.get('bolsista_id'))
-            frequencia = None
+        bolsista_id = request.session.get('bolsista_id')
+        bolsista = get_object_or_404(Bolsista, id=bolsista_id)
+        
+        from datetime import datetime
+        data_obj = datetime.strptime(data_inicio, '%Y-%m-%d').date()
+        
+        try:
+            frequencia_vinculada = Frequencia.objects.get(
+                bolsista=bolsista,
+                data=data_obj
+            )
+            print(f"Frequência encontrada: ID={frequencia_vinculada.id} | Data={frequencia_vinculada.data}")
+        except Frequencia.DoesNotExist:
+            frequencia_vinculada = Frequencia.objects.create(
+                bolsista=bolsista,
+                data=data_obj,
+                status='FALTA',
+                observacao='JUSTIFICADA' 
+            )
+            print(f"Frequência criada: ID={frequencia_vinculada.id} | Data={frequencia_vinculada.data}")
         
         supervisor = bolsista.setor.supervisores.first()
-        
         if not supervisor:
-            messages.error(request, 'Nenhum supervisor encontrado para o seu setor. Contate o administrativo.')
+            messages.error(request, 'Nenhum supervisor encontrado para o seu setor.')
             return redirect('frequencia')
         
-        justificativa = Justificativa(
+        justificativa = Justificativa.objects.create(
             bolsista=bolsista,
-            frequencia=frequencia,
-            supervisor=supervisor,
-            data_inicio=data_inicio,
-            data_final=data_final,
+            frequencia=frequencia_vinculada,  
+            data_inicio=data_obj, 
+            data_final=datetime.strptime(data_final, '%Y-%m-%d').date(),
             motivo=motivo,
             informacao_complementar=informacao_complementar,
             status='PENDENTE'
@@ -449,18 +461,28 @@ def criar_justificativa(request, frequencia_pk=None):
         
         if anexo:
             justificativa.anexo = anexo
+            justificativa.save()
         
-        justificativa.cadastrar_justificativa()
-        messages.success(request, 'Justificativa enviada com sucesso para análise do supervisor.')
+        print(f"Justificativa criada: ID={justificativa.id}")
+        print(f"Bolsista: {justificativa.bolsista.nome}")
+        print(f"Frequência vinculada: {justificativa.frequencia}")
+        print(f"Data frequência: {justificativa.frequencia.data if justificativa.frequencia else 'NULL'}")
         
+        messages.success(request, 'Justificativa enviada com sucesso para análise.')
         return redirect('frequencia')
     
-    frequencia_obj = get_object_or_404(Frequencia, pk=frequencia_pk) if frequencia_pk else None
+    frequencia_obj = None
+    if frequencia_pk:
+        frequencia_obj = get_object_or_404(
+            Frequencia, 
+            pk=frequencia_pk, 
+            bolsista_id=request.session.get('bolsista_id')
+        )
+    
     context = {
         'frequencia': frequencia_obj,
     }
     return render(request, 'operacional/criar_justificativa.html', context)
-
 
 @login_necessario
 def ver_justificativa(request, frequencia_pk):

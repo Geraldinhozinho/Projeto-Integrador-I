@@ -84,12 +84,17 @@
                     </td>
 
                     <td class="opcoes">
-                        {% if registro.documento %}
-                            <a href="{{ registro.documento.url }}"
-                               target="_blank"
-                               rel="noopener noreferrer"
-                               title="Visualizar documento">
-                                Visualizar
+                        {% if registro.justificativa.first %}
+                            <a href="{% url 'ver_justificativa' registro.pk %}" 
+                               class="btn-link" 
+                               title="Visualizar justificativa enviada">
+                                Ver Justificativa
+                            </a>
+                        {% elif registro.status == 'FALTA' %}
+                            <a href="{% url 'criar_justificativa' registro.pk %}" 
+                               class="btn-link" 
+                               title="Enviar justificativa para esta falta">
+                                Justificar
                             </a>
                         {% endif %}
                     </td>
