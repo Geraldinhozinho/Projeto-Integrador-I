@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css_personalizado %}
+    <link rel="stylesheet" href="{% static 'css/frequencia.css' %}">
+{% endblock %}
+
+{% block main %}
+<div class="frequencia-page">
+    <div class="breadcrumb">
+        Início > Supervisor > Meus Bolsistas
+    </div>
+
+    <h1 class="frequencia-titulo">Meus Bolsistas</h1>
+    <h2 class="frequencia-subtitulo">
+        Gerencie e acompanhe a frequência dos bolsistas vinculados a você
+    </h2>
+
+    {% if erro %}
+    <div class="alert-warning" style="padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+        <p style="margin: 0; color: #856404;">{{ erro }}</p>
+    </div>
+    {% endif %}
+
+    <div class="resumo-supervisor" style="display: flex; gap: 20px; margin-bottom: 30px;">
+        <div class="card-resumo" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex: 1;">
+            <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Total de Bolsistas</h3>
+            <div style="font-size: 32px; font-weight: bold; color: #2c3e50;">{{ total_bolsistas }}</div>
+        </div>
+        <div class="card-resumo" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex: 1;">
+            <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #666;">Justificativas Pendentes</h3>
+            <div style="font-size: 32px; font-weight: bold; color: #f39c12;">
+                {{ bolsistas_enriquecidos|length|default:"0" }}
+            </div>
+        </div>
+    </div>
+
+    <div class="tabela-container">
+        <table class="tabela-frequencia">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Matrícula</th>
+                    <th>Setor</th>
+                    <th>Status Hoje</th>
+                    <th>Faltas no Mês</th>
+                    <th>Justificativas Pendentes</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for item in bolsistas_enriquecidos %}
+                <tr>
+                    <td><strong>{{ item.bolsista.nome }}</strong></td>
+                    <td>{{ item.bolsista.matricula }}</td>
+                    <td>{{ item.bolsista.setor.nome }}</td>
+                    <td>
+                        {% if item.registro_hoje %}
+                            {% if item.registro_hoje.status == 'EM_ABERTO' %}
+                                <span class="etiqueta-status" style="background: #fff3cd; color: #856404;">
+                                    Em Aberto ({{ item.registro_hoje.hora_entrada|time:"H:i" }})
+                                </span>
+                            {% elif item.registro_hoje.status == 'CONCLUIDA' %}
+                                <span class="etiqueta-status" style="background: #d4edda; color: #155724;">
+                                    Concluída
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="etiqueta-status" style="background: #f8d7da; color: #721c24;">
+                                Sem registro
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.faltas_mes > 0 %}
+                            <span style="color: #e74c3c; font-weight: bold;">{{ item.faltas_mes }}</span>
+                        {% else %}
+                            <span style="color: #27ae60;">0</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.justificativas_pendentes > 0 %}
+                            <span style="color: #f39c12; font-weight: bold;">{{ item.justificativas_pendentes }} pendentes</span>
+                        {% else %}
+                            <span style="color: #95a5a6;">Nenhuma</span>
+                        {% endif %}
+                    </td>
+                    <td class="opcoes">
+                        <a href="{% url 'frequencia_bolsista' item.bolsista.id %}" class="btn-link" style="margin-right: 10px;">
+                            Ver Frequência
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="sem-registros">
+                        Nenhum bolsista vinculado a você foi encontrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

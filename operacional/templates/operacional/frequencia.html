@@ -1,44 +1,129 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block css_personalizado %}
+    <link rel="stylesheet" href="{% static 'css/frequencia.css' %}">
+{% endblock %}
+
 {% block main %}
-<link rel="stylesheet" href="{% static 'css/frequencia.css' %}">
+
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
 <div class="frequencia-page">
     <div class="breadcrumb">
-        Início > {% if user.is_staff %}Supervisor{% else %}Bolsista{% endif %} > Frequência > Meus Registros
+        {% if bolsista_selecionado %}
+            Início > Supervisor > Frequências > {{ bolsista_selecionado.matricula }}
+        {% else %}
+            Início > Bolsista > Minhas Frequências
+        {% endif %}
     </div>
 
-    <h1 class="frequencia-titulo">Frequência</h1>
-    <h2 class="frequencia-subtitulo">
-        {% if user.is_staff %}Registros dos Bolsistas{% else %}Meus registros{% endif %}
-    </h2>
+    <h1 class="frequencia-titulo">Ponto de Frequência</h1>
+    <h2 class="frequencia-subtitulo">Entrada, saída e histórico pessoal</h2>
 
-    <!-- AÇÕES RÁPIDAS (Adicionado para o Bolsista) -->
-    {% if not user.is_staff %}
-    <div class="acoes-rapidas" style="margin-bottom: 20px; display: flex; gap: 10px;">
-        <button type="button" onclick="abrirScanner()" class="btn btn-primary">
-            📷 Escanear QR Code (Ponto no Campus)
-        </button>
-        <button type="button" onclick="registrarPontoWeb()" class="btn btn-success">
-            💻 Registrar Ponto Web (Home Office)
-        </button>
+    <!-- RESUMO DO MÊS -->
+    <div class="resumo-container">
+        <div class="card-ultima-marcacao">
+            <h3 class="card-titulo">Última Marcação</h3>
+            
+            {% if ultima_frequencia %}
+                <p class="data-marcacao">{{ ultima_frequencia.data|date:"d \d\e b \d\e Y - l" }}</p>
+                <div class="hora-grande">
+                    {% if ultima_frequencia.hora_saida %}
+                        {{ ultima_frequencia.hora_saida|time:"H:i:s" }}
+                    {% else %}
+                        {{ ultima_frequencia.hora_entrada|time:"H:i:s" }}
+                    {% endif %}
+                </div>
+                
+                <div class="acoes-marcacao">
+                    {% if bolsista_selecionado %}
+                        <!-- AÇÃO DO SUPERVISOR -->
+                        <a href="{% url 'registrar_ponto_manual' %}?bolsista_id={{ bolsista_selecionado.id }}" class="btn btn-registro">Registrar Frequência</a>
+                    {% else %}
+                        <!-- AÇÕES DO BOLSISTA -->
+                        {% if ultima_frequencia.status == 'EM_ABERTO' %}
+                            <form method="post" action="{% url 'registrar_saida' %}" class="form-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="bolsista_id" value="{{ bolsista_selecionado.id|default:1 }}">
+                                <button type="submit" class="btn btn-saida">Registrar Saída</button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'registrar_entrada' %}" class="form-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="bolsista_id" value="{{ bolsista_selecionado.id|default:1 }}">
+                                <button type="submit" class="btn btn-entrada">Registrar Entrada</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                {% if ultima_frequencia.status == 'EM_ABERTO' and not bolsista_selecionado %}
+                <div class="alert-warning">
+                    <p>Há um registro sem saída. Avise seu supervisor se não conseguir registrar.</p>
+                </div>
+                {% endif %}
+
+            {% else %}
+                <p class="sem-marcacao">Nenhuma marcação registrada hoje</p>
+
+                {% if bolsista_selecionado %}
+                    <!-- AÇÃO DO SUPERVISOR QUANDO NÃO HÁ REGISTRO -->
+                    <div class="acoes-marcacao" style="margin-top: 20px;">
+                        <a href="#" class="btn btn-primary">Registrar Frequência</a>
+                    </div>
+                {% else %}
+                    <!-- AÇÕES DO BOLSISTA QUANDO NÃO HÁ REGISTRO -->
+                    <div class="hora-grande" id="hora-atual-display">--:--:--</div>
+                    <div class="acoes-rapidas" style="margin-top: 20px;">
+                        <button type="button" onclick="abrirScanner()" class="btn btn-primary btn-escanear-qr" 
+                                data-api-url="{% url 'registrar_ponto_qr' %}">
+                            Escanear QR Code (Ponto no Campus)
+                        </button>
+                        
+                        <button type="button" 
+                            id="btn-registrar-frequencia"
+                            onclick="abrirModalRegistro()" 
+                            class="btn btn-success btn-registrar-frequencia"
+                            data-url-entrada="{% url 'registrar_entrada' %}"
+                            data-url-saida="{% url 'registrar_saida' %}"
+                            data-status-atual="CONCLUIDA">
+                            Registrar Entrada
+                        </button>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="card-resumo-mes">
+            <h3 class="card-titulo">Resumo do mês</h3>
+            <div class="grid-resumo">
+                <div class="item-resumo bg-cinza">
+                    <div class="numero-resumo">{{ resumo.dias_previstos|default:"20" }}</div>
+                    <div class="label-resumo">Previstos</div>
+                </div>
+                <div class="item-resumo bg-verde">
+                    <div class="numero-resumo">{{ resumo.presencas|default:"0" }}</div>
+                    <div class="label-resumo">Presenças</div>
+                </div>
+                <div class="item-resumo bg-vermelho">
+                    <div class="numero-resumo">{{ resumo.faltas|default:"0" }}</div>
+                    <div class="label-resumo">Faltas</div>
+                </div>
+            </div>
+        </div>
     </div>
-    {% endif %}
 
+
+    <!-- TABELA DE FREQUÊNCIAS -->
     <div class="tabela-container">
         <table class="tabela-frequencia">
             <thead>
                 <tr>
-                    {% if user.is_staff %}
-                    <th>Bolsista</th>
-                    {% endif %}
                     <th>Data</th>
                     <th>Entrada</th>
                     <th>Saída</th>
-                    {% if not user.is_staff %}
                     <th>Assinatura</th>
-                    {% endif %}
                     <th>Status</th>
                     <th>Observação</th>
                     <th>Documentos</th>
@@ -49,15 +134,10 @@
             <tbody>
                 {% for freq in frequencias %}
                 <tr class="{% if freq.status == 'EM_ABERTO' %}linha-em-aberto{% endif %}">
-                    {% if user.is_staff %}
-                    <td>{{ freq.bolsista.nome }}</td>
-                    {% endif %}
-                    
                     <td>{{ freq.data|date:"d/m/Y" }}</td>
                     <td>{{ freq.hora_entrada|time:"H:i"|default:"--:--" }}</td>
                     <td>{{ freq.hora_saida|time:"H:i"|default:"--:--" }}</td>
                     
-                    {% if not user.is_staff %}
                     <td class="assinatura">
                         {% if freq.assinatura %}
                             <span class="etiqueta-status etiqueta-assinado">Assinado</span>
@@ -65,7 +145,6 @@
                             <span class="etiqueta-status etiqueta-nao-assinado">Pendente</span>
                         {% endif %}
                     </td>
-                    {% endif %}
                     
                     <td>
                         <span class="etiqueta-status etiqueta-{{ freq.status|lower }}">
@@ -84,20 +163,18 @@
                     </td>
                     
                     <td class="opcoes">
-                        {% if user.is_staff %}
-                            <a href="{% url 'ajustar_frequencia' freq.pk %}" class="btn-link">Ajustar</a>
-                            <a href="{% url 'historico_frequencia' freq.pk %}" class="btn-link">Histórico</a>
-                        {% else %}
-                            {% if freq.status == 'FALTA' %}
-                                <a href="{% url 'criar_justificativa' freq.pk %}" class="btn-link">Justificar</a>
-                            {% endif %}
+                        {% if freq.justificativa.exists %}
+                            <a href="{% url 'ver_justificativa' freq.pk %}" class="btn-link">Ver Justificativa</a>
+                        {% elif freq.status == 'FALTA' %}
+                            <a href="{% url 'criar_justificativa' freq.pk %}" class="btn-link">Justificar</a>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="{% if user.is_staff %}9{% else %}8{% endif %}" class="sem-registros">
-                        Nenhum registro encontrado.
+                    <!-- Colspan fixo em 8, que é o número de colunas da tabela do bolsista -->
+                    <td colspan="8" class="sem-registros">
+                        Nenhum registro encontrado neste mês.
                     </td>
                 </tr>
                 {% endfor %}
@@ -116,11 +193,7 @@
         </ul>
         <div class="comprovante-conteudo">
             <div class="comprovante-texto">
-                <p>
-                    Este documento foi emitido pelo Módulo de Gestão de Bolsistas em
-                    {{ data_emissao|date:"d/m/Y" }}, para comprovar sua autenticidade 
-                    faça a leitura do QRCode ao lado.
-                </p>
+                <p>Este documento foi emitido pelo Módulo de Gestão de Bolsistas em {{ data_emissao|date:"d/m/Y" }}.</p>
                 <div class="codigos-autenticacao">
                     <p><strong>Código Verificador:</strong> {{ codigo_verificador }}</p>
                     <p><strong>Código de Autenticação:</strong> {{ codigo_autenticacao }}</p>
@@ -134,111 +207,64 @@
     {% endif %}
 </div>
 
-<!-- MODAL DO SCANNER (Adicionado: é aqui que a câmera vai abrir) -->
-<div id="scanner-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; text-align: center; position: relative;">
-        <h3 style="margin-top: 0;">Escanear QR Code</h3>
-        <p style="font-size: 0.9em; color: #666;">Aponte a câmera para o monitor da COADE</p>
-        
-        <input type="text" id="matricula-input" placeholder="Digite sua matrícula" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-        
-        <div id="reader" style="width: 100%; border-radius: 4px; overflow: hidden; margin: 10px 0;"></div>
-        
-        <div id="scanner-feedback" style="margin: 10px 0; font-weight: bold; min-height: 20px;"></div>
-        
-        <button type="button" onclick="fecharScanner()" class="btn btn-danger" style="margin-top: 10px;">Fechar Câmera</button>
+<!-- Modal de Confirmação -->
+<div id="modal-confirmacao" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="modal-titulo">Você está registrando seu ponto eletronicamente, deseja confirmar?</h3>
+        <div id="info-registro" class="modal-info">
+            <p><strong>Data:</strong> <span id="data-registro"></span></p>
+            <p><strong>Hora:</strong> <span id="hora-registro"></span></p>
+            <p><strong>Tipo:</strong> <span id="tipo-registro"></span></p>
+        </div>
+        <div class="modal-acoes">
+            <button onclick="confirmarRegistro()" class="btn btn-success">Confirmar</button>
+            <button onclick="fecharModalConfirmacao()" class="btn btn-danger">Cancelar</button>
+        </div>
     </div>
 </div>
 
-<!-- SCRIPTS -->
+<!-- Modal de Operação Concluída -->
+<div id="modal-concluido" class="modal-overlay modal-loading">
+    <div class="modal-content">
+        <h3 class="modal-titulo">Operação concluída</h3>
+        <p class="modal-texto">Aguarde, estamos recarregando a página...</p>
+        <div class="spinner"></div>
+    </div>
+</div>
+
+<!-- Modal do Scanner -->
+<div id="scanner-modal" class="modal-overlay modal-scanner">
+    <div class="modal-content">
+        <h3 class="modal-titulo">Escanear QR Code</h3>
+        <p class="modal-subtitulo">Aponte a câmera para o monitor da COADE</p>
+        <input type="text" id="matricula-input" placeholder="Digite sua matrícula" class="input-matricula">
+        <div id="reader" class="scanner-reader"></div>
+        <div id="scanner-feedback" class="scanner-feedback"></div>
+        <button type="button" onclick="fecharScanner()" class="btn btn-danger">Fechar Câmera</button>
+    </div>
+</div>
+
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script src="{% static 'js/frequencia.js' %}"></script>
+
 <script>
-    let html5QrCode;
-    let isScanning = false;
-
-    function abrirScanner() {
-        document.getElementById('scanner-modal').style.display = 'flex';
-        iniciarCamera();
-    }
-
-    function fecharScanner() {
-        document.getElementById('scanner-modal').style.display = 'none';
-        if (html5QrCode) {
-            html5QrCode.stop().catch(err => console.log(err));
-        }
-        document.getElementById('scanner-feedback').innerText = "";
-        document.getElementById('matricula-input').value = "";
-        isScanning = false;
-    }
-
-    function iniciarCamera() {
-        if (isScanning) return;
-        isScanning = true;
-        
-        html5QrCode = new Html5Qrcode("reader");
-        
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            onScanSuccess,
-            () => {} 
-        ).catch(err => {
-            document.getElementById('scanner-feedback').innerText = "Erro ao acessar câmera. Verifique as permissões.";
-            document.getElementById('scanner-feedback').style.color = "red";
-            isScanning = false;
-        });
-    }
-
-    async function onScanSuccess(decodedText) {
-        if (!isScanning) return;
-        isScanning = false; // Evita leituras duplicadas
-        
-        const matricula = document.getElementById('matricula-input').value.trim();
-        const feedback = document.getElementById('scanner-feedback');
-        
-        if (!matricula) {
-            feedback.innerText = "Por favor, digite sua matrícula primeiro.";
-            feedback.style.color = "red";
-            isScanning = true;
-            return;
-        }
-
-        feedback.innerText = "Processando...";
-        feedback.style.color = "blue";
-
-        try {
-            const response = await fetch('/frequencia/registrar-qr/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({ token: decodedText, matricula: matricula })
+document.addEventListener('DOMContentLoaded', function() {
+    const horaDisplay = document.getElementById('hora-atual-display');
+    
+    if (horaDisplay) {
+        function atualizarRelogio() {
+            const agora = new Date();
+            horaDisplay.textContent = agora.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
             });
-
-            const data = await response.json();
-
-            if (data.sucesso) {
-                feedback.innerText = `✅ ${data.mensagem}`;
-                feedback.style.color = "green";
-                html5QrCode.stop();
-                setTimeout(() => {
-                    location.reload(); 
-                }, 2000);
-            } else {
-                feedback.innerText = `❌ ${data.mensagem}`;
-                feedback.style.color = "red";
-                isScanning = true; 
-            }
-        } catch (error) {
-            feedback.innerText = "Erro de conexão com o servidor.";
-            feedback.style.color = "red";
-            isScanning = true;
         }
+        
+        atualizarRelogio(); 
+        setInterval(atualizarRelogio, 1000); 
     }
-
-    function registrarPontoWeb() {
-        alert("Funcionalidade de Ponto Web (Home Office) - Em desenvolvimento para a próxima entrega.");
-    }
+});
 </script>
+
 {% endblock %}

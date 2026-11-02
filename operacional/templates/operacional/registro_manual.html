@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css_personalizado %}
+    <link rel="stylesheet" href="{% static 'css/frequencia.css' %}">
+    <link rel="stylesheet" href="{% static 'css/registro_manual.css' %}">
+{% endblock %}
+
+{% block main %}
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alerta-mensagem alerta-{{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="manual-form-container">
+    <div class="form-header">
+        <h2 class="form-titulo">Registrar Ponto Manual</h2>
+        {% if bolsista_selecionado %}
+            <p class="form-subtitulo">
+                Bolsista: <strong>{{ bolsista_selecionado.nome }}</strong> ({{ bolsista_selecionado.matricula }})
+            </p>
+        {% endif %}
+    </div>
+
+    <form method="post" action="{% url 'registrar_ponto_manual' %}">
+        {% csrf_token %}
+        
+        {% if bolsista_selecionado %}
+            <input type="hidden" name="bolsista_id" value="{{ bolsista_selecionado.id }}">
+        {% endif %}
+
+        <div class="form-row form-row-superior">
+            <div class="form-group form-group-operacao">
+                <label>
+                    <span class="required-mark">*</span> Operação:
+                </label>
+                <select name="operacao" class="form-control" required>
+                    <option value="entrada">Entrada</option>
+                    <option value="saida">Saída</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <span class="required-mark">*</span> Data da Marcação:
+                </label>
+                <input type="date" name="data" class="form-control" required 
+                       value="{% if hoje %}{{ hoje|date:'Y-m-d' }}{% endif %}">
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <span class="required-mark">*</span> Horário da Marcação:
+                </label>
+                <input type="time" name="horario" class="form-control" required step="1">
+            </div>
+        </div>
+
+        <div class="form-group form-group-observacao">
+            <label>Observação</label>
+            <textarea name="observacao" id="obs-textarea" class="form-control" rows="6" 
+                      placeholder="Motivo do registro manual..."></textarea>
+            <div class="char-count">
+                <span id="char-count">0</span> Caracteres informados.
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="javascript:history.back()" class="btn-cancel">Cancelar</a>
+            <button type="submit" class="btn-submit">Registrar</button>
+        </div>
+    </form>
+</div>
+
+<script src="{% static 'js/registro_manual.js' %}"></script>
+{% endblock %}

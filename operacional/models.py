@@ -108,10 +108,14 @@ class Justificativa(models.Model):
 
 class Frequencia(models.Model):
     STATUS_CHOICES = [
+        ('PENDENTE', 'Pendente'),
         ('EM_ABERTO', 'Em Aberto'),
         ('CONCLUIDA', 'Concluída'),
         ('FALTA', 'Falta'),
         ('JUSTIFICADA', 'Justificada'),
+        ('FIM_DE_SEMANA', 'Fim de Semana'),
+        ('FERIADO', 'Feriado'),
+
     ]
 
     data = models.DateField()
@@ -131,12 +135,13 @@ class Frequencia(models.Model):
     def __str__(self):
         return f"{self.data} - {self.bolsista.nome}"
 
-    def registrar_frequencia(self, bolsista, token):
-        hoje = timezone.now().date()
-        agora = timezone.now().time()
+    def registrar_frequencia(self, bolsista, token=''):
+        agora_local = timezone.localtime(timezone.now())
+        hoje = agora_local.date()
+        agora = agora_local.time()
 
-        if Frequencia.objects.filter(token_qr=token).exists():
-            return None, "Este QR Code já foi utilizado. Solicite um novo ao monitor."
+        if token and Frequencia.objects.filter(token_qr=token).exists():
+            return None, "Este QR Code já foi utilizado."
 
         freq_hoje = Frequencia.objects.filter(bolsista=bolsista, data=hoje).first()
 
@@ -145,20 +150,30 @@ class Frequencia(models.Model):
             self.data = hoje
             self.hora_entrada = agora
             self.status = 'EM_ABERTO'
-            self.token_qr = token  
+            if token:  
+                self.token_qr = token
             self.save()
             return self, "Entrada registrada com sucesso!"
+        
+        elif freq_hoje.status == 'PENDENTE':
+            freq_hoje.hora_entrada = agora
+            freq_hoje.status = 'EM_ABERTO'
+            if token: 
+                freq_hoje.token_qr = token
+            freq_hoje.save()
+            return freq_hoje, "Entrada registrada com sucesso!"
         
         elif freq_hoje.status == 'EM_ABERTO':
             freq_hoje.hora_saida = agora
             freq_hoje.status = 'CONCLUIDA'
-            freq_hoje.token_qr = token  
+            if token: 
+                freq_hoje.token_qr = token
             freq_hoje.save()
             return freq_hoje, "Saída registrada com sucesso!"
         
         else:
-            return freq_hoje, "Você já registrou entrada e saída hoje. Não é possível registrar novamente."
-        
+            return freq_hoje, "Você já registrou entrada e saída hoje."
+          
     def ajustar_frequencia(self, hora_saida, usuario_responsavel, justificativa):
         """Ajusta a frequência manualmente (supervisor) e registra no histórico"""
         hora_saida_anterior = self.hora_saida

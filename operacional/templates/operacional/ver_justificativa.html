@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main %}
+<link rel="stylesheet" href="{% static 'css/justificativa.css' %}">
+
+<div class="justificativa-page">
+    <div class="breadcrumb">
+        Início > Bolsista > Minhas Frequências > Ver Justificativa
+    </div>
+
+    <h1 class="page-title">Detalhes da Justificativa</h1>
+
+    <div class="alert-info">
+        <strong>Referente à falta do dia:</strong> {{ justificativa.data_inicio|date:"d/m/Y" }}
+    </div>
+
+    <div class="form-justificativa">
+        <div class="status-header" style="text-align: center; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <h3 style="margin: 0 0 10px 0; color: #2c3e50;">Status Atual</h3>
+            <span class="etiqueta-status etiqueta-{{ justificativa.status|lower }}" style="font-size: 1.2em; padding: 8px 20px;">
+                {{ justificativa.get_status_display }}
+            </span>
+            
+            {% if justificativa.status == 'PENDENTE' %}
+                <p style="margin-top: 10px; color: #856404; font-size: 0.9em;">
+                    Sua justificativa está em análise pelo supervisor.
+                </p>
+            {% elif justificativa.status == 'APROVADA' %}
+                <p style="margin-top: 10px; color: #155724; font-size: 0.9em;">
+                    Sua justificativa foi aceita. Sua frequência foi regularizada.
+                </p>
+            {% elif justificativa.status == 'REJEITADA' %}
+                <p style="margin-top: 10px; color: #721c24; font-size: 0.9em;">
+                    Sua justificativa não foi aceita. Entre em contato com o setor responsável.
+                </p>
+            {% endif %}
+        </div>
+
+        <fieldset class="form-section">
+            <legend>Dados Gerais</legend>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Data de Início</label>
+                    <div class="readonly-field">{{ justificativa.data_inicio|date:"d/m/Y" }}</div>
+                </div>
+                <div class="form-group">
+                    <label>Data Final</label>
+                    <div class="readonly-field">{{ justificativa.data_final|date:"d/m/Y" }}</div>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Detalhamento</legend>
+            <div class="form-group">
+                <label>Motivo</label>
+                <div class="readonly-field">{{ justificativa.get_motivo_display }}</div>
+            </div>
+            <div class="form-group">
+                <label>Informação Complementar</label>
+                <div class="readonly-field" style="white-space: pre-wrap;">{{ justificativa.informacao_complementar|default:"Nenhuma informação adicional fornecida." }}</div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Anexos</legend>
+            <div class="form-group">
+                <label>Documento Anexado</label>
+                {% if justificativa.anexo %}
+                    <a href="{{ justificativa.anexo.url }}" target="_blank" class="btn-link-anexo">
+                        Visualizar Anexo ({{ justificativa.anexo.name|slice:"-4:"|upper }})
+                    </a>
+                {% else %}
+                    <div class="readonly-field">Nenhum anexo enviado.</div>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        <div class="form-actions">
+            <a href="{% url 'frequencia' %}" class="btn btn-secondary">Voltar para Frequências</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

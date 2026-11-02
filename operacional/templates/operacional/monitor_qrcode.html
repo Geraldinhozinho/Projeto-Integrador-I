@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block css_personalizado %}
+    <link rel="stylesheet" href="{% static 'css/monitor_qrcode.css' %}">
+{% endblock %}
+
 {% block main %}
 <div class="monitor-container">
-    <h1>Monitor de QR Code - COADE</h1>
-    <p>O código se atualiza automaticamente a cada 50 segundos.</p>
+    <h1 class="monitor-titulo">Monitor de QR Code - COADES</h1>
+    <p class="monitor-descricao">O código se atualiza automaticamente a cada 50 segundos.</p>
     
     <div class="qr-display">
         <img id="qr-image" src="data:image/png;base64,{{ qr_base64 }}" alt="QR Code">
@@ -16,57 +20,11 @@
     
     <div class="info">
         <p><strong>Token atual:</strong> {{ token }}</p>
-        <p style="font-size: 0.9em; color: #666;">
+        <p class="info-dica">
             Os bolsistas devem escanear este código com a câmera do celular
         </p>
     </div>
 </div>
 
-<script>
-    let timeLeft = 50; 
-    const countdown = document.getElementById('countdown');
-    
-    setInterval(() => {
-        timeLeft--;
-        countdown.textContent = timeLeft;
-        if (timeLeft <= 0) {
-            location.reload(); 
-        }
-    }, 1000);
-</script>
-
-<style>
-    .monitor-container {
-        max-width: 600px;
-        margin: 40px auto;
-        text-align: center;
-        padding: 20px;
-    }
-    
-    .qr-display {
-        margin: 30px 0;
-        padding: 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .qr-display img {
-        width: 300px;
-        height: 300px;
-    }
-    
-    .timer {
-        font-size: 1.2em;
-        margin: 20px 0;
-        color: #2c3e50;
-    }
-    
-    .info {
-        background: #ecf0f1;
-        padding: 15px;
-        border-radius: 4px;
-        margin-top: 20px;
-    }
-</style>
+<script src="{% static 'js/monitor_qrcode.js' %}"></script>
 {% endblock %}
