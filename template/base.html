@@ -19,7 +19,7 @@
         <div class="layout">
             <header>
                 <div id="topo">
-                    <img id="logo" src="{% static 'img/clockif_logo.svg' %}" alt="">
+                    <a href="{% url 'login_simples' %}"><img id="logo" src="{% static 'img/clockif_logo.svg' %}" alt=""></a>
                     <div id="botao_sino">
                         <span id="notificacao">21</span>
                         <div id="icon">
@@ -32,7 +32,13 @@
                         <div id="icon_pessoa">
                             <img id="pessoa" src="{% static 'img/user_dark.svg' %}" alt="">
                         </div>
-                        <p>Usuário do SUAP</p>
+                        <div style="display: flex; flex-direction: column; align-items: left;">
+                            <p>{{ request.session.user_nome|default:"Usuário" }}</p>
+                            {% if request.session.user_type == 'supervisor' %}
+                                <small style="color: #666; font-size: 0.75em;">Supervisor</small>
+                            {% endif %}
+                        </div>
+
                     </div>
                     <div id="user2">
                         <img id="pessoa2" src="{% static 'img/user.svg' %}" alt="">
@@ -51,23 +57,42 @@
                                     <img src="{% static 'img/home.svg' %}" alt="">
                                     <p>Início</p>
                                 </a>
-                                
+
                             </div>
                         </li>
-                        <li class="item_lista">
-                            <div class="sub_item">
-                                <button class="links"  onclick="expandir('opcoes1')">
-                                    <img src="{% static 'img/user_grey.svg' %}" alt="">
-                                    <p>Bolsista</p>
-                                </button>
-                                <div id="opcoes1">
-                                    <a href="#">Minhas Tarefas</a>
-                                    <a href="{% url 'frequencia' %}">Minhas Frequências</a>
-                                    <a href="{% url 'comprovantes_mensais' %}">Meus comprovantes mensais</a>
-                                    <a href="#">Minha Agenda</a>
+                        {% if request.session.user_type == 'bolsista' %}
+                            <li class="item_lista">
+                                <div class="sub_item">
+                                    <button class="links" onclick="expandir('opcoes1')">
+                                        <img src="{% static 'img/user_grey.svg' %}" alt="">
+                                        <p>Bolsista</p>
+                                    </button>
+                                    <div id="opcoes1">
+                                        <a href="#">Minhas Tarefas</a>
+                                        <a href="{% url 'frequencia' %}">Minhas Frequências</a>
+                                        <a href="{% url 'comprovantes_mensais' %}">Meus comprovantes mensais</a>
+                                        <a href="#">Minha Agenda</a>
+                                    </div>
                                 </div>
-                            </div>
-                        </li>
+                            </li>
+                        {% endif %}
+
+                        {% if request.session.user_type == 'supervisor' %}
+                            <li class="item_lista">
+                                <div class="sub_item">
+                                    <button class="links" onclick="expandir('opcoes_supervisor')">
+                                        <img src="{% static 'img/user_teacher.svg' %}" alt="">
+                                        <p>Supervisor</p>
+                                    </button>
+                                    <div id="opcoes_supervisor">
+                                        <a href="{% url 'meus_bolsistas' %}">Meus Bolsistas</a>
+                                        <a href="#">Frequências</a>
+                                        <a href="{% url 'registrar_ponto_manual' %}">Registrar Ponto Manual</a>
+                                        <a href="{% url 'agendas' %}">Agendas</a>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endif %}
                         <!-- <li class="item_lista">
                             <a class="links" href="">
                                 <img src="{% static 'img/document.svg' %}" alt="">
