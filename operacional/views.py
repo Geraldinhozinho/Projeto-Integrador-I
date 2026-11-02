@@ -3,9 +3,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.db.models import Max
+from functools import wraps
 import json
 import calendar
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.contrib import messages
 from .models import Bolsa, Bolsista, Agenda, Frequencia, Justificativa, Historico, Supervisor
 
@@ -16,6 +17,66 @@ except ImportError:
     def validar_token_qr(t): return True
     def gerar_imagem_qr(t): return ""
 
+
+# ============================================================
+# DECORATOR DE PROTEÇÃO
+# ============================================================
+def login_necessario(view_func):
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.session.get('bolsista_id') and not request.session.get('supervisor_id'):
+            return redirect('login_simples')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+
+# ============================================================
+# LOGIN / LOGOUT (Públicas)
+# ============================================================
+def login_simples(request):
+    if request.session.get('bolsista_id'):
+        return redirect('frequencia')
+    if request.session.get('supervisor_id'):
+        return redirect('meus_bolsistas')
+
+    if request.method == 'POST':
+        matricula = request.POST.get('matricula', '').strip()
+        
+        if not matricula:
+            messages.error(request, 'Por favor, digite sua matrícula.')
+            return render(request, 'operacional/login.html')
+
+        try:
+            bolsista = Bolsista.objects.get(matricula=matricula)
+            request.session['bolsista_id'] = bolsista.id
+            request.session['user_type'] = 'bolsista'
+            request.session['user_nome'] = bolsista.nome
+            return redirect('frequencia')
+        except Bolsista.DoesNotExist:
+            pass
+
+        try:
+            supervisor = Supervisor.objects.get(matricula=matricula)
+            request.session['supervisor_id'] = supervisor.id
+            request.session['user_type'] = 'supervisor'
+            request.session['user_nome'] = supervisor.nome
+            return redirect('meus_bolsistas')
+        except Supervisor.DoesNotExist:
+            pass
+
+        messages.error(request, 'Matrícula não encontrada no sistema.')
+
+    return render(request, 'operacional/login.html')
+
+
+def logout_simples(request):
+    request.session.flush()
+    return redirect('login_simples')
+
+
+# ============================================================
+# FUNÇÕES AUXILIARES
+# ============================================================
 def calcular_dias_uteis_mes(ano, mes):
     dias_uteis = 0
     cal = calendar.monthcalendar(ano, mes)
@@ -27,10 +88,8 @@ def calcular_dias_uteis_mes(ano, mes):
                     dias_uteis += 1
     return dias_uteis
 
+
 def preencher_dias_retroativos(bolsista_id, data_referencia):
-    import calendar
-    from datetime import date, timedelta
-    
     ano = data_referencia.year
     mes = data_referencia.month
     ontem = data_referencia.date() - timedelta(days=1)
@@ -49,7 +108,6 @@ def preencher_dias_retroativos(bolsista_id, data_referencia):
         data__in=dias_do_mes_passados
     ).values_list('data', flat=True)
     
-    registros_criados = 0
     for dia in dias_do_mes_passados:
         if dia not in registros_existentes:
             if dia.weekday() < 5:
@@ -65,76 +123,80 @@ def preencher_dias_retroativos(bolsista_id, data_referencia):
                 status=status_dia,
                 observacao=obs_dia
             )
-            registros_criados += 1
-            
-    return registros_criados
+
+
+# ============================================================
+# VIEWS PÚBLICAS (Index, Bolsistas, Bolsas, Agendas)
+# ============================================================
 def Index(request):
     return render(request, 'operacional/index.html')
 
 def bolsistas(request):
-    bolsistas_list = Bolsista.objects.all()
-    return render(request, 'operacional/bolsistas.html', {'bolsistas': bolsistas_list})
-
+    return render(request, 'operacional/bolsistas.html', {'bolsistas': Bolsista.objects.all()})
 
 def bolsas(request):
-    bolsas_list = Bolsa.objects.all()
-    return render(request, 'operacional/bolsas.html', {'bolsas': bolsas_list})
-
+    return render(request, 'operacional/bolsas.html', {'bolsas': Bolsa.objects.all()})
 
 def agendas(request):
-    agendas_list = Agenda.objects.all()
-    return render(request, 'operacional/agendas.html', {'agendas': agendas_list})
+    return render(request, 'operacional/agendas.html', {'agendas': Agenda.objects.all()})
 
 
+# ============================================================
+# FREQUÊNCIA DO BOLSISTA (Protegida)
+# ============================================================
+@login_necessario
 def frequencia(request):
-    bolsista_id = 1  
+    bolsista_id = request.session.get('bolsista_id')
+    
+    if not bolsista_id:
+        return redirect('meus_bolsistas')
+
     hoje = timezone.localtime(timezone.now())
     primeiro_dia = hoje.replace(day=1, hour=0, minute=0, second=0)
     ultimo_dia = hoje.replace(day=calendar.monthrange(hoje.year, hoje.month)[1], hour=23, minute=59, second=59)
     intervalo_mes = [primeiro_dia.date(), ultimo_dia.date()]
     
-    if request.user.is_staff:
-        frequencias = Frequencia.objects.select_related('bolsista').filter(
-            data__range=intervalo_mes
-        ).order_by('-data', '-hora_entrada')
-        ultima_frequencia = None
-        resumo = {}
-    else:
-        preencher_dias_retroativos(bolsista_id, hoje)
+    preencher_dias_retroativos(bolsista_id, hoje)
 
-        frequencias = Frequencia.objects.filter(
-            bolsista__id=bolsista_id,
-            data__range=intervalo_mes
-        ).order_by('-data', '-hora_entrada')
-        
-        ultima_frequencia = frequencias.filter(status='EM_ABERTO').first()
-        if not ultima_frequencia:
-            ultima_frequencia = frequencias.first()
-        
-        dias_uteis_reais = calcular_dias_uteis_mes(hoje.year, hoje.month)
-        
-        resumo = {
-            'dias_previstos': dias_uteis_reais,  
-            'presencas': frequencias.filter(status='CONCLUIDA').count(),
-            'faltas': frequencias.filter(status='FALTA').count(),
-        }
+    frequencias = Frequencia.objects.filter(
+        bolsista__id=bolsista_id,
+        data__range=intervalo_mes
+    ).order_by('-data', '-hora_entrada')
+    
+    ultima_frequencia = frequencias.filter(status='EM_ABERTO').first()
+    if not ultima_frequencia:
+        ultima_frequencia = frequencias.first()
+    
+    dias_uteis_reais = calcular_dias_uteis_mes(hoje.year, hoje.month)
+    
+    resumo = {
+        'dias_previstos': dias_uteis_reais,  
+        'presencas': frequencias.filter(status='CONCLUIDA').count(),
+        'faltas': frequencias.filter(status='FALTA').count(),
+    }
     
     context = {
         'frequencias': frequencias,
-        'user': request.user,
         'assinatura_disponivel': False,
         'ultima_frequencia': ultima_frequencia,
         'resumo': resumo,
     }
     return render(request, 'operacional/frequencia.html', context)
 
+
+# ============================================================
+# FREQUÊNCIA DE BOLSISTA ESPECÍFICO (Supervisor)
+# ============================================================
+@login_necessario
 def frequencia_bolsista_especifico(request, bolsista_id):
-    if not request.user.is_staff:
+    supervisor_id = request.session.get('supervisor_id')
+    
+    if not supervisor_id:
         return redirect('frequencia')
         
     bolsista = get_object_or_404(Bolsista, id=bolsista_id)
     
-    hoje = timezone.now()
+    hoje = timezone.localtime(timezone.now())
     primeiro_dia = hoje.replace(day=1)
     ultimo_dia = hoje.replace(day=calendar.monthrange(hoje.year, hoje.month)[1])
     intervalo_mes = [primeiro_dia.date(), ultimo_dia.date()]
@@ -156,7 +218,6 @@ def frequencia_bolsista_especifico(request, bolsista_id):
 
     context = {
         'frequencias': frequencias,
-        'user': request.user,
         'assinatura_disponivel': False,
         'ultima_frequencia': ultima_frequencia,
         'resumo': resumo,
@@ -165,197 +226,44 @@ def frequencia_bolsista_especifico(request, bolsista_id):
     return render(request, 'operacional/frequencia.html', context)
 
 
-
+# ============================================================
+# REGISTRAR ENTRADA / SAÍDA (Protegidas)
+# ============================================================
+@login_necessario
 @require_POST
 def registrar_entrada(request):
-    bolsista_id = request.POST.get('bolsista_id')
-    print(f"TENTANDO REGISTRAR ENTRADA - ID RECEBIDO: {bolsista_id}")
+    bolsista_id = request.session.get('bolsista_id')
+    if not bolsista_id:
+        return redirect('login_simples')
     
-    try:
-        bolsista = get_object_or_404(Bolsista, id=bolsista_id)
-        
-        freq = Frequencia()
-        obj_retornado, mensagem = freq.registrar_frequencia(bolsista, token='') 
-        
-        if obj_retornado is None:
-            print(f"ERRO: Token inválido ou já usado")
-        else:
-            print(f"SUCESSO: {mensagem} | Status: {obj_retornado.status}")
-            
-    except Exception as e:
-        print(f"ERRO CRÍTICO AO SALVAR: {e}")
-    
+    bolsista = get_object_or_404(Bolsista, id=bolsista_id)
+    freq = Frequencia()
+    freq.registrar_frequencia(bolsista, token='') 
     return redirect('frequencia')
 
 
+@login_necessario
 @require_POST
 def registrar_saida(request):
-    bolsista_id = request.POST.get('bolsista_id')
-    print(f"TENTANDO REGISTRAR SAÍDA - ID RECEBIDO: {bolsista_id}")
+    bolsista_id = request.session.get('bolsista_id')
+    if not bolsista_id:
+        return redirect('login_simples')
     
-    try:
-        bolsista = get_object_or_404(Bolsista, id=bolsista_id)
-        
-        freq = Frequencia()
-        obj_retornado, mensagem = freq.registrar_frequencia(bolsista, token='')
-        
-        if obj_retornado is None:
-            print(f"ERRO: Registro já concluído ou token inválido")
-        else:
-            print(f"SUCESSO: {mensagem} | Status: {obj_retornado.status}")
-            
-    except Exception as e:
-        print(f"ERRO CRÍTICO AO SALVAR: {e}")
-        
+    bolsista = get_object_or_404(Bolsista, id=bolsista_id)
+    freq = Frequencia()
+    freq.registrar_frequencia(bolsista, token='')
     return redirect('frequencia')
 
 
-def frequencia_supervisor(request):
-    frequencias = Frequencia.objects.select_related('bolsista').order_by('-data')
-    return render(request, 'operacional/frequencia.html', {
-        'frequencias': frequencias,
-        'bolsistas': Bolsista.objects.all(),
-        'user': request.user,
-        'assinatura_disponivel': False,
-    })
-
-def frequencia_bolsista_especifico(request, bolsista_id):
-    if not request.user.is_staff:
-        return redirect('frequencia')
-        
-    bolsista = get_object_or_404(Bolsista, id=bolsista_id)
-    frequencias = Frequencia.objects.filter(bolsista=bolsista).order_by('-data')
-    
-    ultima_frequencia = frequencias.first()
-    
-    hoje = timezone.now()
-    primeiro_dia = hoje.replace(day=1)
-    ultimo_dia = hoje.replace(day=calendar.monthrange(hoje.year, hoje.month)[1])
-    
-    freq_mes = Frequencia.objects.filter(
-        bolsista=bolsista,
-        data__range=[primeiro_dia.date(), ultimo_dia.date()]
-    )
-    
-    resumo = {
-        'dias_previstos': 20, 
-        'presencas': freq_mes.filter(status='CONCLUIDA').count(),
-        'faltas': freq_mes.filter(status='FALTA').count(),
-    }
-
-    context = {
-        'frequencias': frequencias,
-        'user': request.user,
-        'assinatura_disponivel': False,
-        'ultima_frequencia': ultima_frequencia,
-        'resumo': resumo,
-        'bolsista_selecionado': bolsista 
-    }
-    return render(request, 'operacional/frequencia.html', context)
-
-def criar_justificativa(request, frequencia_pk=None):
-    if request.method == 'POST':
-        data_inicio = request.POST.get('data_inicio')
-        data_final = request.POST.get('data_final')
-        motivo = request.POST.get('motivo')
-        informacao_complementar = request.POST.get('informacao_complementar', '')
-        anexo = request.FILES.get('anexo')
-        
-        if frequencia_pk:
-            frequencia = get_object_or_404(Frequencia, pk=frequencia_pk)
-            bolsista = frequencia.bolsista
-        else:
-            bolsista = get_object_or_404(Bolsista, matricula=request.POST.get('matricula'))
-            frequencia = None
-        
-        # 👇 Pega o supervisor do setor do bolsista automaticamente
-        supervisor = bolsista.setor.supervisores.first()
-        
-        if not supervisor:
-            messages.error(request, 'Nenhum supervisor cadastrado para o seu setor. Contate o administrativo.')
-            return redirect('frequencia')
-        
-        justificativa = Justificativa(
-            bolsista=bolsista,
-            frequencia=frequencia,
-            supervisor=supervisor,  # 👈 Campo obrigatório
-            data_inicio=data_inicio,
-            data_final=data_final,
-            motivo=motivo,
-            informacao_complementar=informacao_complementar,
-            status='PENDENTE'
-        )
-        
-        if anexo:
-            justificativa.anexo = anexo
-        
-        justificativa.cadastrar_justificativa()
-        messages.success(request, 'Justificativa enviada para análise.')
-        return redirect('frequencia')
-    
-    context = {
-        'frequencia': get_object_or_404(Frequencia, pk=frequencia_pk) if frequencia_pk else None
-    }
-    return render(request, 'operacional/criar_justificativa.html', context)
-
-def ver_justificativa(request, frequencia_pk):
-    frequencia = get_object_or_404(Frequencia, pk=frequencia_pk)
-    justificativa = frequencia.justificativa.first()
-    
-    if not justificativa:
-        return redirect('frequencia')
-    
-    context = {
-        'frequencia': frequencia,
-        'justificativa': justificativa,
-        'is_supervisor': request.user.is_staff,  # 👈 Adicionar essa linha
-    }
-    return render(request, 'operacional/ver_justificativa.html', context)
-
-
-def monitor_qrcode(request):
-    """Exibe o QR Code na tela da COADE"""
-    token = gerar_token_qr()
-    qr_base64 = gerar_imagem_qr(token)
-    
-    return render(request, 'operacional/monitor_qrcode.html', {
-        'qr_base64': qr_base64,
-        'token': token
-    })
-
-@require_POST
-def registrar_ponto_qr(request):
-    try:
-        data = json.loads(request.body)
-        token = data.get('token')
-        matricula = str(data.get('matricula', '')).strip()
-
-        if not validar_token_qr(token):
-            return JsonResponse({'sucesso': False, 'mensagem': 'QR Code expirado ou inválido.'}, status=400)
-
-        bolsista = Bolsista.objects.get(matricula=matricula)
-        
-        freq = Frequencia()
-        freq_obj, mensagem = freq.registrar_frequencia(bolsista, token) 
-
-        if freq_obj is None:
-            return JsonResponse({'sucesso': False, 'mensagem': mensagem}, status=400)
-
-        return JsonResponse({
-            'sucesso': True,
-            'mensagem': mensagem,
-            'bolsista': bolsista.nome,
-            'status': freq_obj.status
-        })
-
-    except Bolsista.DoesNotExist:
-        return JsonResponse({'sucesso': False, 'mensagem': 'Matrícula não encontrada.'}, status=404)
-    except Exception as e:
-        return JsonResponse({'sucesso': False, 'mensagem': f'Erro: {str(e)}'}, status=500)
-
+# ============================================================
+# MEUS BOLSISTAS (Supervisor - Protegida)
+# ============================================================
+@login_necessario
 def meus_bolsistas(request):
-    if not request.user.is_staff:
-        return redirect('index')
+    supervisor_id = request.session.get('supervisor_id')
+    
+    if not supervisor_id:
+        return redirect('frequencia')
     
     bolsistas = Bolsista.objects.all().order_by('nome')
     
@@ -396,6 +304,11 @@ def meus_bolsistas(request):
     }
     return render(request, 'operacional/meus_bolsistas.html', context)
 
+
+# ============================================================
+# REGISTRO MANUAL (Supervisor - Protegida)
+# ============================================================
+@login_necessario
 def registrar_ponto_manual(request):
     bolsista_id = request.GET.get('bolsista_id')
     bolsista_selecionado = None
@@ -404,21 +317,11 @@ def registrar_ponto_manual(request):
         bolsista_selecionado = get_object_or_404(Bolsista, id=bolsista_id)
     
     if request.method == 'POST':
-        print(f"\n{'='*60}")
-        print(f"🔍 DEBUG REGISTRO MANUAL")
-        print(f"POST data: {request.POST}")
-        
         post_bolsista_id = request.POST.get('bolsista_id')
         data_str = request.POST.get('data')
         horario_str = request.POST.get('horario')
         operacao = request.POST.get('operacao')
         observacao = request.POST.get('observacao', '')
-        
-        print(f"Bolsista ID do POST: {post_bolsista_id}")
-        print(f"Data: {data_str}")
-        print(f"Horário: {horario_str}")
-        print(f"Operação: {operacao}")
-        print(f"{'='*60}\n")
         
         if not post_bolsista_id:
             messages.error(request, 'Selecione um bolsista.')
@@ -485,7 +388,7 @@ def registrar_ponto_manual(request):
             
             Historico.objects.create(
                 frequencia=freq,
-                usuario_responsavel=request.user.username or 'Supervisor',
+                usuario_responsavel=request.session.get('user_nome') or 'Supervisor',
                 alteracao=alteracao_texto + (f'. Obs: {observacao}' if observacao else '')
             )
             
@@ -507,14 +410,136 @@ def registrar_ponto_manual(request):
     }
     return render(request, 'operacional/registro_manual.html', context)
 
+
+# ============================================================
+# JUSTIFICATIVAS (Protegidas)
+# ============================================================
+@login_necessario
+def criar_justificativa(request, frequencia_pk=None):
+    if request.method == 'POST':
+        data_inicio = request.POST.get('data_inicio')
+        data_final = request.POST.get('data_final')
+        motivo = request.POST.get('motivo')
+        informacao_complementar = request.POST.get('informacao_complementar', '')
+        anexo = request.FILES.get('anexo')
+        
+        if frequencia_pk:
+            frequencia = get_object_or_404(Frequencia, pk=frequencia_pk)
+            bolsista = frequencia.bolsista
+        else:
+            bolsista = get_object_or_404(Bolsista, id=request.POST.get('bolsista_id'))
+            frequencia = None
+        
+        supervisor = bolsista.setor.supervisores.first()
+        
+        if not supervisor:
+            messages.error(request, 'Nenhum supervisor encontrado para o seu setor. Contate o administrativo.')
+            return redirect('frequencia')
+        
+        justificativa = Justificativa(
+            bolsista=bolsista,
+            frequencia=frequencia,
+            supervisor=supervisor,
+            data_inicio=data_inicio,
+            data_final=data_final,
+            motivo=motivo,
+            informacao_complementar=informacao_complementar,
+            status='PENDENTE'
+        )
+        
+        if anexo:
+            justificativa.anexo = anexo
+        
+        justificativa.cadastrar_justificativa()
+        messages.success(request, 'Justificativa enviada com sucesso para análise do supervisor.')
+        
+        return redirect('frequencia')
+    
+    frequencia_obj = get_object_or_404(Frequencia, pk=frequencia_pk) if frequencia_pk else None
+    context = {
+        'frequencia': frequencia_obj,
+    }
+    return render(request, 'operacional/criar_justificativa.html', context)
+
+
+@login_necessario
+def ver_justificativa(request, frequencia_pk):
+    frequencia = get_object_or_404(Frequencia, pk=frequencia_pk)
+    justificativa = frequencia.justificativa.first()
+    
+    if not justificativa:
+        return redirect('frequencia')
+    
+    context = {
+        'frequencia': frequencia,
+        'justificativa': justificativa
+    }
+    return render(request, 'operacional/ver_justificativa.html', context)
+
+
+# ============================================================
+# QR CODE (Públicas - usadas pelo scanner)
+# ============================================================
+def monitor_qrcode(request):
+    token = gerar_token_qr()
+    qr_base64 = gerar_imagem_qr(token)
+    
+    return render(request, 'operacional/monitor_qrcode.html', {
+        'qr_base64': qr_base64,
+        'token': token
+    })
+
+
+@require_POST
+def registrar_ponto_qr(request):
+    try:
+        data = json.loads(request.body)
+        token = data.get('token')
+        matricula = str(data.get('matricula', '')).strip()
+
+        if not validar_token_qr(token):
+            return JsonResponse({'sucesso': False, 'mensagem': 'QR Code expirado ou inválido.'}, status=400)
+
+        bolsista = Bolsista.objects.get(matricula=matricula)
+        
+        freq = Frequencia()
+        freq_obj, mensagem = freq.registrar_frequencia(bolsista, token) 
+
+        if freq_obj is None:
+            return JsonResponse({'sucesso': False, 'mensagem': mensagem}, status=400)
+
+        return JsonResponse({
+            'sucesso': True,
+            'mensagem': mensagem,
+            'bolsista': bolsista.nome,
+            'status': freq_obj.status
+        })
+
+    except Bolsista.DoesNotExist:
+        return JsonResponse({'sucesso': False, 'mensagem': 'Matrícula não encontrada.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'sucesso': False, 'mensagem': f'Erro: {str(e)}'}, status=500)
+
+
+# ============================================================
+# COMPROVANTES E RELATÓRIOS (Protegidas)
+# ============================================================
+@login_necessario
 def comprovantes_mensais(request):
-    bolsista_id = 1
+    bolsista_id = request.session.get('bolsista_id')
+    
+    if not bolsista_id:
+        return redirect('frequencia')
 
     bolsista = get_object_or_404(Bolsista, id=bolsista_id)
 
-    frequencias = (Frequencia.objects.filter(bolsista=bolsista).values('data__year', 'data__month').annotate(ultima_data=Max('data')).order_by('-data__year', '-data__month'))
+    frequencias = (Frequencia.objects.filter(bolsista=bolsista)
+                   .values('data__year', 'data__month')
+                   .annotate(ultima_data=Max('data'))
+                   .order_by('-data__year', '-data__month'))
 
-    meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+    meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
 
     comprovantes = []
 
@@ -526,7 +551,7 @@ def comprovantes_mensais(request):
             'id': index,
             'ano': ano,
             'mes': meses[mes - 1],
-            'numero_mes': mes,  # Importante: número do mês
+            'numero_mes': mes,
             'programa': 'Apoio à Formação Estudantil (PF)',
             'tipo': 'Folha de Frequência',
             'ultima_atualizacao': registro['ultima_data'],
@@ -540,39 +565,33 @@ def comprovantes_mensais(request):
 
     return render(request, 'operacional/comprovantes_mensais.html', context)
 
+
+@login_necessario
 def relatorio_frequencia(request, ano=None, mes=None):
-    bolsista_id = 1  # Temporário: depois vincular ao usuário logado
+    bolsista_id = request.session.get('bolsista_id')
+    
+    if not bolsista_id:
+        return redirect('frequencia')
 
     bolsista = get_object_or_404(Bolsista, id=bolsista_id)
-
     hoje = timezone.localtime(timezone.now())
 
-    # Se ano e mês vierem pela URL, usa esses valores.
-    # Caso contrário, tenta buscar pelos parâmetros GET.
     if ano is None:
         ano = request.GET.get('ano', hoje.year)
-
     if mes is None:
         mes = request.GET.get('mes', hoje.month)
 
     try:
         ano = int(ano)
         mes = int(mes)
-
         if mes < 1 or mes > 12:
             raise ValueError
-
     except (ValueError, TypeError):
         ano = hoje.year
         mes = hoje.month
 
     primeiro_dia = date(ano, mes, 1)
-
-    ultimo_dia = date(
-        ano,
-        mes,
-        calendar.monthrange(ano, mes)[1]
-    )
+    ultimo_dia = date(ano, mes, calendar.monthrange(ano, mes)[1])
 
     registros = Frequencia.objects.filter(
         bolsista=bolsista,
@@ -585,21 +604,14 @@ def relatorio_frequencia(request, ano=None, mes=None):
     context = {
         'registros': registros,
         'bolsista': bolsista,
-
         'mes': mes,
         'ano': ano,
-
         'supervisor': None,
         'data_assinatura': hoje,
         'data_emissao': hoje,
-
         'codigo_verificador': str(bolsista.id).zfill(6),
         'codigo_autenticacao': token,
-
-        'qr_code_url': (
-            f"data:image/png;base64,{qr_base64}"
-            if qr_base64 else None
-        ),
+        'qr_code_url': f"data:image/png;base64,{qr_base64}" if qr_base64 else None,
     }
 
     return render(
