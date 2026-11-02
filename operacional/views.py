@@ -180,6 +180,7 @@ def frequencia(request):
         'assinatura_disponivel': False,
         'ultima_frequencia': ultima_frequencia,
         'resumo': resumo,
+        'is_supervisor': False,
     }
     return render(request, 'operacional/frequencia.html', context)
 
@@ -221,7 +222,8 @@ def frequencia_bolsista_especifico(request, bolsista_id):
         'assinatura_disponivel': False,
         'ultima_frequencia': ultima_frequencia,
         'resumo': resumo,
-        'bolsista_selecionado': bolsista
+        'bolsista_selecionado': bolsista,
+        'is_supervisor': True,
     }
     return render(request, 'operacional/frequencia.html', context)
 
