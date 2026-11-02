@@ -302,16 +302,20 @@ def criar_justificativa(request, frequencia_pk=None):
             frequencia = get_object_or_404(Frequencia, pk=frequencia_pk)
             bolsista = frequencia.bolsista
         else:
-            bolsista = get_object_or_404(Bolsista, matricula=request.POST.get('matricula'))
+            bolsista = get_object_or_404(Bolsista, id=request.POST.get('bolsista_id'))
             frequencia = None
         
-        # 👇 Pega o supervisor logado (ou o supervisor do setor do bolsista)
-        supervisor = get_object_or_404(Supervisor, email=request.user.email)
+        # 👇 Pega o supervisor do setor do bolsista automaticamente
+        supervisor = bolsista.setor.supervisores.first()
+        
+        if not supervisor:
+            messages.error(request, 'Nenhum supervisor encontrado para o seu setor. Contate o administrativo.')
+            return redirect('frequencia')
         
         justificativa = Justificativa(
             bolsista=bolsista,
             frequencia=frequencia,
-            supervisor=supervisor,  # 👈 Campo obrigatório!
+            supervisor=supervisor,  # 👈 Preenchido automaticamente
             data_inicio=data_inicio,
             data_final=data_final,
             motivo=motivo,
@@ -323,21 +327,14 @@ def criar_justificativa(request, frequencia_pk=None):
             justificativa.anexo = anexo
         
         justificativa.cadastrar_justificativa()
+        messages.success(request, 'Justificativa enviada com sucesso para análise do supervisor.')
         
-        messages.success(request, 'Justificativa enviada para análise do supervisor.')
-        
-        if frequencia:
-            return redirect('frequencia_bolsista', bolsista_id=bolsista.id)
         return redirect('frequencia')
     
-    # 👇 Passa a frequência para o template (se vier pela URL)
-    frequencia_obj = None
-    if frequencia_pk:
-        frequencia_obj = get_object_or_404(Frequencia, pk=frequencia_pk)
-    
+    # GET: exibe o formulário
+    frequencia_obj = get_object_or_404(Frequencia, pk=frequencia_pk) if frequencia_pk else None
     context = {
         'frequencia': frequencia_obj,
-        'bolsistas': Bolsista.objects.all().order_by('nome') if not frequencia_pk else None,
     }
     return render(request, 'operacional/criar_justificativa.html', context)
 

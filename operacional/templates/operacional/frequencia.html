@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block css_personalizado %}
-    <link rel="stylesheet" href="{% static 'css/frequencia.css' %}">
+<link rel="stylesheet" href="{% static 'css/frequencia.css' %}">
 {% endblock %}
 
 {% block main %}
@@ -12,9 +12,9 @@
 <div class="frequencia-page">
     <div class="breadcrumb">
         {% if bolsista_selecionado %}
-            Início > Supervisor > Frequências > {{ bolsista_selecionado.matricula }}
+        Início > Supervisor > Frequências > {{ bolsista_selecionado.matricula }}
         {% else %}
-            Início > Bolsista > Minhas Frequências
+        Início > Bolsista > Minhas Frequências
         {% endif %}
     </div>
 
@@ -24,77 +24,82 @@
     <!-- RESUMO DO MÊS -->
     <div class="resumo-container">
         <div class="card-ultima-marcacao">
-            <div class="card-header">
-                <h3 class="card-titulo">Última Marcação</h3>
-                <a href="{% url 'criar_justificativa' ultima_frequencia.id %}" >Adicionar Justificativa</a>
-            </div>    
-            
-            {% if ultima_frequencia %}
-                <p class="data-marcacao">{{ ultima_frequencia.data|date:"d \d\e b \d\e Y - l" }}</p>
-                <div class="hora-grande">
-                    {% if ultima_frequencia.hora_saida %}
-                        {{ ultima_frequencia.hora_saida|time:"H:i:s" }}
-                    {% else %}
-                        {{ ultima_frequencia.hora_entrada|time:"H:i:s" }}
-                    {% endif %}
-                </div>
-                
-                <div class="acoes-marcacao">
-                    {% if bolsista_selecionado %}
-                        <!-- AÇÃO DO SUPERVISOR -->
-                        <a href="{% url 'registrar_ponto_manual' %}?bolsista_id={{ bolsista_selecionado.id }}" class="btn btn-registro">Registrar Frequência</a>
-                    {% else %}
-                        <!-- AÇÕES DO BOLSISTA -->
-                        {% if ultima_frequencia.status == 'EM_ABERTO' %}
-                            <form method="post" action="{% url 'registrar_saida' %}" class="form-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="bolsista_id" value="{{ bolsista_selecionado.id|default:1 }}">
-                                <button type="submit" class="btn btn-saida">Registrar Saída</button>
-                            </form>
-                        {% else %}
-                            <form method="post" action="{% url 'registrar_entrada' %}" class="form-inline">
-                                {% csrf_token %}
-                                <input type="hidden" name="bolsista_id" value="{{ bolsista_selecionado.id|default:1 }}">
-                                <button type="submit" class="btn btn-entrada">Registrar Entrada</button>
-                            </form>
-                        {% endif %}
-                    {% endif %}
-                </div>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3 class="card-titulo mb-0">Última Marcação</h3>
 
-                {% if ultima_frequencia.status == 'EM_ABERTO' and not bolsista_selecionado %}
-                <div class="alert-warning">
-                    <p>Há um registro sem saída. Avise seu supervisor se não conseguir registrar.</p>
-                </div>
+                {# Só mostra o botão se existir uma frequência para justificar #}
+                {% if ultima_frequencia %}
+                <a href="{% url 'criar_justificativa' ultima_frequencia.id %}" class="btn btn-sm btn-warning">
+                    <i class="bi bi-plus-circle"></i> Adicionar Justificativa
+                </a>
+                {% else %}
+                <span class="text-muted small"></span>
                 {% endif %}
+            </div>
+
+            {% if ultima_frequencia %}
+            <p class="data-marcacao">{{ ultima_frequencia.data|date:"d \d\e b \d\e Y - l" }}</p>
+            <div class="hora-grande">
+                {% if ultima_frequencia.hora_saida %}
+                {{ ultima_frequencia.hora_saida|time:"H:i:s" }}
+                {% else %}
+                {{ ultima_frequencia.hora_entrada|time:"H:i:s" }}
+                {% endif %}
+            </div>
+
+            <div class="acoes-marcacao">
+                {% if bolsista_selecionado %}
+                <!-- AÇÃO DO SUPERVISOR -->
+                <a href="{% url 'registrar_ponto_manual' %}?bolsista_id={{ bolsista_selecionado.id }}"
+                    class="btn btn-registro">Registrar Frequência</a>
+                {% else %}
+                <!-- AÇÕES DO BOLSISTA -->
+                {% if ultima_frequencia.status == 'EM_ABERTO' %}
+                <form method="post" action="{% url 'registrar_saida' %}" class="form-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="bolsista_id" value="{{ bolsista_selecionado.id|default:1 }}">
+                    <button type="submit" class="btn btn-saida">Registrar Saída</button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'registrar_entrada' %}" class="form-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="bolsista_id" value="{{ bolsista_selecionado.id|default:1 }}">
+                    <button type="submit" class="btn btn-entrada">Registrar Entrada</button>
+                </form>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            {% if ultima_frequencia.status == 'EM_ABERTO' and not bolsista_selecionado %}
+            <div class="alert-warning">
+                <p>Há um registro sem saída. Avise seu supervisor se não conseguir registrar.</p>
+            </div>
+            {% endif %}
 
             {% else %}
-                <p class="sem-marcacao">Nenhuma marcação registrada hoje</p>
+            <p class="sem-marcacao">Nenhuma marcação registrada hoje</p>
 
-                {% if bolsista_selecionado %}
-                    <!-- AÇÃO DO SUPERVISOR QUANDO NÃO HÁ REGISTRO -->
-                    <div class="acoes-marcacao" style="margin-top: 20px;">
-                        <a href="#" class="btn btn-primary">Registrar Frequência</a>
-                    </div>
-                {% else %}
-                    <!-- AÇÕES DO BOLSISTA QUANDO NÃO HÁ REGISTRO -->
-                    <div class="hora-grande" id="hora-atual-display">--:--:--</div>
-                    <div class="acoes-rapidas" style="margin-top: 20px;">
-                        <button type="button" onclick="abrirScanner()" class="btn btn-primary btn-escanear-qr" 
-                                data-api-url="{% url 'registrar_ponto_qr' %}">
-                            Escanear QR Code (Ponto no Campus)
-                        </button>
-                        
-                        <button type="button" 
-                            id="btn-registrar-frequencia"
-                            onclick="abrirModalRegistro()" 
-                            class="btn btn-success btn-registrar-frequencia"
-                            data-url-entrada="{% url 'registrar_entrada' %}"
-                            data-url-saida="{% url 'registrar_saida' %}"
-                            data-status-atual="CONCLUIDA">
-                            Registrar Entrada
-                        </button>
-                    </div>
-                {% endif %}
+            {% if bolsista_selecionado %}
+            <!-- AÇÃO DO SUPERVISOR QUANDO NÃO HÁ REGISTRO -->
+            <div class="acoes-marcacao" style="margin-top: 20px;">
+                <a href="#" class="btn btn-primary">Registrar Frequência</a>
+            </div>
+            {% else %}
+            <!-- AÇÕES DO BOLSISTA QUANDO NÃO HÁ REGISTRO -->
+            <div class="hora-grande" id="hora-atual-display">--:--:--</div>
+            <div class="acoes-rapidas" style="margin-top: 20px;">
+                <button type="button" onclick="abrirScanner()" class="btn btn-primary btn-escanear-qr"
+                    data-api-url="{% url 'registrar_ponto_qr' %}">
+                    Escanear QR Code (Ponto no Campus)
+                </button>
+
+                <button type="button" id="btn-registrar-frequencia" onclick="abrirModalRegistro()"
+                    class="btn btn-success btn-registrar-frequencia" data-url-entrada="{% url 'registrar_entrada' %}"
+                    data-url-saida="{% url 'registrar_saida' %}" data-status-atual="CONCLUIDA">
+                    Registrar Entrada
+                </button>
+            </div>
+            {% endif %}
             {% endif %}
         </div>
 
@@ -140,36 +145,36 @@
                     <td>{{ freq.data|date:"d/m/Y" }}</td>
                     <td>{{ freq.hora_entrada|time:"H:i"|default:"--:--" }}</td>
                     <td>{{ freq.hora_saida|time:"H:i"|default:"--:--" }}</td>
-                    
+
                     <td class="assinatura">
                         {% if freq.assinatura %}
-                            <span class="etiqueta-status etiqueta-assinado">Assinado</span>
+                        <span class="etiqueta-status etiqueta-assinado">Assinado</span>
                         {% else %}
-                            <span class="etiqueta-status etiqueta-nao-assinado">Pendente</span>
+                        <span class="etiqueta-status etiqueta-nao-assinado">Pendente</span>
                         {% endif %}
                     </td>
-                    
+
                     <td>
                         <span class="etiqueta-status etiqueta-{{ freq.status|lower }}">
                             {{ freq.get_status_display }}
                         </span>
                     </td>
-                    
+
                     <td>{{ freq.observacao|truncatechars:30|default:"-" }}</td>
-                    
+
                     <td class="documento">
                         {% if freq.documentos %}
-                            <a href="{{ freq.documentos.url }}" target="_blank">Anexo</a>
+                        <a href="{{ freq.documentos.url }}" target="_blank">Anexo</a>
                         {% else %}
-                            -
+                        -
                         {% endif %}
                     </td>
-                    
+
                     <td class="opcoes">
                         {% if freq.justificativa.exists %}
-                            <a href="{% url 'ver_justificativa' freq.pk %}" class="btn-link">Ver Justificativa</a>
+                        <a href="{% url 'ver_justificativa' freq.pk %}" class="btn-link">Ver Justificativa</a>
                         {% elif freq.status == 'FALTA' %}
-                            <a href="{% url 'criar_justificativa' freq.pk %}" class="btn-link">Justificar</a>
+                        <a href="{% url 'criar_justificativa' freq.pk %}" class="btn-link">Justificar</a>
                         {% endif %}
                     </td>
                 </tr>
@@ -203,7 +208,7 @@
                 </div>
             </div>
             {% if qr_code_url %}
-                <img class="qr-code" src="{{ qr_code_url }}" alt="QR Code">
+            <img class="qr-code" src="{{ qr_code_url }}" alt="QR Code">
             {% endif %}
         </div>
     </section>
@@ -251,23 +256,23 @@
 <script src="{% static 'js/frequencia.js' %}"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const horaDisplay = document.getElementById('hora-atual-display');
-    
-    if (horaDisplay) {
-        function atualizarRelogio() {
-            const agora = new Date();
-            horaDisplay.textContent = agora.toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
+    document.addEventListener('DOMContentLoaded', function () {
+        const horaDisplay = document.getElementById('hora-atual-display');
+
+        if (horaDisplay) {
+            function atualizarRelogio() {
+                const agora = new Date();
+                horaDisplay.textContent = agora.toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            }
+
+            atualizarRelogio();
+            setInterval(atualizarRelogio, 1000);
         }
-        
-        atualizarRelogio(); 
-        setInterval(atualizarRelogio, 1000); 
-    }
-});
+    });
 </script>
 
 {% endblock %}
