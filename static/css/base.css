@@ -263,9 +263,13 @@ footer {
     --blue: #66D0FF;
     --blue-2: #CCEFFF;
     --blue-3: #0A7F70;
+    --green: #1FAD34;
+    --green-2: #99FF99;
+    --green-3: #66FF99;
 
     --borda: 1px solid rgba(255, 255, 255, 0.4);
     --borda-2: 1px solid rgba(255, 255, 255);
+    --borda-grey: 1px solid var(--grey-2);
     --borda-red: 1px solid var(--red-3);
     --borda-blue: 1px solid var(--blue);
     --borda-white: 1px solid var(--white-3);

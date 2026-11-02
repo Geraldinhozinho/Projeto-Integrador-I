@@ -148,9 +148,9 @@
 
                     <td class="assinatura">
                         {% if freq.assinatura %}
-                        <span class="etiqueta-status etiqueta-assinado">Assinado</span>
+                        <span>{{ freq.bolsista.nome }} </span>
                         {% else %}
-                        <span class="etiqueta-status etiqueta-nao-assinado">Pendente</span>
+                        <span class="etiqueta-assinatura etiqueta-nao-assinado">Pendente</span>
                         {% endif %}
                     </td>
 
@@ -160,7 +160,15 @@
                         </span>
                     </td>
 
-                    <td>{{ freq.observacao|truncatechars:30|default:"-" }}</td>
+                    <td>
+                        {% if freq.observacao %}
+                        <span class="etiqueta-observacao">
+                            {{ freq.observacao|truncatechars:30|default:"-" }}
+                        </span>
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
 
                     <td class="documento">
                         {% if freq.documentos %}

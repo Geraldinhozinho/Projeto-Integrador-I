@@ -111,18 +111,19 @@ class Frequencia(models.Model):
         ('PENDENTE', 'Pendente'),
         ('EM_ABERTO', 'Em Aberto'),
         ('CONCLUIDA', 'Concluída'),
-        ('FALTA', 'Falta'),
+        ('FALTA', 'Falta')
+    ]
+    OBSERVACAO_CHOICES = [
         ('JUSTIFICADA', 'Justificada'),
         ('FIM_DE_SEMANA', 'Fim de Semana'),
-        ('FERIADO', 'Feriado'),
-
-    ]
+        ('FERIADO', 'Feriado')
+        ]
 
     data = models.DateField()
     hora_entrada = models.TimeField(null=True, blank=True)
     hora_saida = models.TimeField(null=True, blank=True)
     assinatura = models.BooleanField(default=False)
-    observacao = models.TextField(blank=True)
+    observacao = models.CharField(max_length=50, choices=OBSERVACAO_CHOICES, null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='EM_ABERTO')
     documentos = models.FileField(upload_to='documentos_frequencia/', null=True, blank=True)
     bolsista = models.ForeignKey('Bolsista', on_delete=models.CASCADE, related_name='frequencias')

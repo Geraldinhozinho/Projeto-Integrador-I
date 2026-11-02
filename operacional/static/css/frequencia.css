@@ -113,10 +113,33 @@
     text-align: center;
 }
 
+.etiqueta-assinatura {
+    display: inline-block;
+    padding: 2px 7px 1px;
+    border: var(--borda-red);
+    background-color: var(--red-4);
+    border-radius: 12px;
+    font-size: 9px;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.etiqueta-observacao {
+    display: inline-block;
+    padding: 2px 7px 1px;
+    border: var(--borda-grey);
+    background-color: var(--white-3);
+    border-radius: 12px;
+    font-size: 9px;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
 .etiqueta-status {
     display: inline-block;
     padding: 2px 7px 1px;
-    border: var(--borda-2);
+    border: var(--borda-blue);
+    background-color: var(--blue-2);
     border-radius: 12px;
     font-size: 9px;
     line-height: 1.3;
@@ -222,7 +245,7 @@
     background-color: var(--white);
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: var(--borda-white);
 }
 
 .card-titulo {
@@ -304,18 +327,18 @@
 .btn {
     padding: 10px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 30px;
     cursor: pointer;
     font-weight: bold;
     font-size: 12px;
 }
 
 .btn-primary { background-color: var(--blue-2); color: var(--white); }
-.btn-success { background-color: rgb(39, 174, 96); color: var(--white); }
-.btn-danger { background-color: rgb(231, 76, 60); color: var(--white); }
-.btn-entrada { background-color: rgb(39, 174, 96); color: var(--white); }
-.btn-registro { background-color: rgb(39, 174, 96); color: var(--white); text-decoration: none;}
-.btn-saida { background-color: rgb(39, 174, 96); color: var(--white); }
+.btn-success { background-color: var(--green); color: var(--white); }
+.btn-danger { background-color: var(--red); color: var(--white); }
+.btn-entrada { background-color: var(--green); color: var(--white); }
+.btn-registro { background-color: var(--green); color: var(--white); text-decoration: none;}
+.btn-saida { background-color: var(--green);color: var(--white); }
 
 .form-inline { display: inline; }
 
