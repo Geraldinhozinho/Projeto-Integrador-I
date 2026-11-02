@@ -253,43 +253,6 @@ def frequencia_bolsista_especifico(request, bolsista_id):
     }
     return render(request, 'operacional/frequencia.html', context)
 
-# def criar_justificativa(request, frequencia_pk=None):
-#     if request.method == 'POST':
-#         data_inicio = request.POST.get('data_inicio')
-#         data_final = request.POST.get('data_final')
-#         motivo = request.POST.get('motivo')
-#         informacao_complementar = request.POST.get('informacao_complementar', '')
-#         anexo = request.FILES.get('anexo')
-        
-#         if frequencia_pk:
-#             frequencia = get_object_or_404(Frequencia, pk=frequencia_pk)
-#             bolsista = frequencia.bolsista
-#         else:
-#             bolsista = get_object_or_404(Bolsista, matricula=request.POST.get('matricula'))
-#             frequencia = None
-        
-#         justificativa = Justificativa(
-#             bolsista=bolsista,
-#             frequencia=frequencia,
-#             data_inicio=data_inicio,
-#             data_final=data_final,
-#             motivo=motivo,
-#             informacao_complementar=informacao_complementar,
-#             status='PENDENTE'
-#         )
-        
-#         if anexo:
-#             justificativa.anexo = anexo
-        
-#         justificativa.cadastrar_justificativa()
-        
-#         return redirect('frequencia')
-    
-#     context = {
-#         'frequencia': get_object_or_404(Frequencia, pk=frequencia_pk) if frequencia_pk else None
-#     }
-#     return render(request, 'operacional/criar_justificativa.html', context)
-
 def criar_justificativa(request, frequencia_pk=None):
     if request.method == 'POST':
         data_inicio = request.POST.get('data_inicio')
@@ -302,20 +265,20 @@ def criar_justificativa(request, frequencia_pk=None):
             frequencia = get_object_or_404(Frequencia, pk=frequencia_pk)
             bolsista = frequencia.bolsista
         else:
-            bolsista = get_object_or_404(Bolsista, id=request.POST.get('bolsista_id'))
+            bolsista = get_object_or_404(Bolsista, matricula=request.POST.get('matricula'))
             frequencia = None
         
         # 👇 Pega o supervisor do setor do bolsista automaticamente
         supervisor = bolsista.setor.supervisores.first()
         
         if not supervisor:
-            messages.error(request, 'Nenhum supervisor encontrado para o seu setor. Contate o administrativo.')
+            messages.error(request, 'Nenhum supervisor cadastrado para o seu setor. Contate o administrativo.')
             return redirect('frequencia')
         
         justificativa = Justificativa(
             bolsista=bolsista,
             frequencia=frequencia,
-            supervisor=supervisor,  # 👈 Preenchido automaticamente
+            supervisor=supervisor,  # 👈 Campo obrigatório
             data_inicio=data_inicio,
             data_final=data_final,
             motivo=motivo,
@@ -327,14 +290,11 @@ def criar_justificativa(request, frequencia_pk=None):
             justificativa.anexo = anexo
         
         justificativa.cadastrar_justificativa()
-        messages.success(request, 'Justificativa enviada com sucesso para análise do supervisor.')
-        
+        messages.success(request, 'Justificativa enviada para análise.')
         return redirect('frequencia')
     
-    # GET: exibe o formulário
-    frequencia_obj = get_object_or_404(Frequencia, pk=frequencia_pk) if frequencia_pk else None
     context = {
-        'frequencia': frequencia_obj,
+        'frequencia': get_object_or_404(Frequencia, pk=frequencia_pk) if frequencia_pk else None
     }
     return render(request, 'operacional/criar_justificativa.html', context)
 
@@ -347,7 +307,8 @@ def ver_justificativa(request, frequencia_pk):
     
     context = {
         'frequencia': frequencia,
-        'justificativa': justificativa
+        'justificativa': justificativa,
+        'is_supervisor': request.user.is_staff,  # 👈 Adicionar essa linha
     }
     return render(request, 'operacional/ver_justificativa.html', context)
 
@@ -647,3 +608,44 @@ def relatorio_frequencia(request, ano=None, mes=None):
         context
     )
 
+def lista_justificativas_supervisor(request):
+    """O superusuário vê TODAS as justificativas do sistema."""
+    if not request.user.is_staff:
+        return redirect('frequencia')
+    
+    justificativas = Justificativa.objects.select_related(
+        'bolsista', 'frequencia', 'supervisor'
+    ).all()
+    
+    status_filtro = request.GET.get('status', 'PENDENTE')
+    if status_filtro != 'TODAS':
+        justificativas = justificativas.filter(status=status_filtro)
+    
+    context = {
+        'justificativas': justificativas.order_by('-data_inicio'),
+        'status_filtro': status_filtro,
+    }
+    return render(request, 'operacional/lista_justificativas_supervisor.html', context)
+
+
+@require_POST
+def aprovar_rejeitar_justificativa(request, justificativa_pk):
+    if not request.user.is_staff:
+        return redirect('frequencia')
+    
+    justificativa = get_object_or_404(Justificativa, pk=justificativa_pk)
+    acao = request.POST.get('acao')
+    
+    if acao == 'aprovar':
+        justificativa.validar_justificativa(aprovado=True)
+        if justificativa.frequencia:
+            justificativa.frequencia.status = 'JUSTIFICADA'
+            justificativa.frequencia.save()
+        messages.success(request, f'Justificativa de {justificativa.bolsista.nome} aprovada.')
+    elif acao == 'rejeitar':
+        justificativa.validar_justificativa(aprovado=False)
+        messages.warning(request, f'Justificativa de {justificativa.bolsista.nome} rejeitada.')
+    
+    if justificativa.frequencia:
+        return redirect('ver_justificativa', frequencia_pk=justificativa.frequencia.pk)
+    return redirect('frequencia')

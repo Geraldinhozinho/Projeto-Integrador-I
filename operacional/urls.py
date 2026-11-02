@@ -1,6 +1,5 @@
 from django.urls import path
-from .views import (Index, bolsas, bolsistas, agendas, frequencia, frequencia_supervisor, registrar_entrada, registrar_saida, criar_justificativa, 
-            monitor_qrcode, registrar_ponto_qr, ver_justificativa, frequencia_bolsista_especifico, meus_bolsistas, registrar_ponto_manual, comprovantes_mensais, relatorio_frequencia)
+from .views import (Index, bolsas, bolsistas, agendas, frequencia, frequencia_supervisor, registrar_entrada, registrar_saida, criar_justificativa, monitor_qrcode, registrar_ponto_qr, ver_justificativa, frequencia_bolsista_especifico, meus_bolsistas, registrar_ponto_manual, comprovantes_mensais, relatorio_frequencia, lista_justificativas_supervisor, aprovar_rejeitar_justificativa)
 
 urlpatterns = [
     path('', Index, name='index'),
@@ -19,6 +18,8 @@ urlpatterns = [
     
     path('supervisor/ponto_manual/', registrar_ponto_manual, name='registrar_ponto_manual'),
     path('supervisor/meus_bolsistas/', meus_bolsistas, name='meus_bolsistas'),
+    path('supervisor/justificativas/', lista_justificativas_supervisor, name='lista_justificativas_supervisor'),
+    path('supervisor/justificativa/<int:justificativa_pk>/acao/', aprovar_rejeitar_justificativa, name='aprovar_rejeitar_justificativa'),
     
     path('monitor/qrcode/', monitor_qrcode, name='monitor_qrcode'),
     path('frequencia/registrar_qr/', registrar_ponto_qr, name='registrar_ponto_qr'),
