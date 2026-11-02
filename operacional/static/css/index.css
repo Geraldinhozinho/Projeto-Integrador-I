@@ -1,0 +1,13 @@
+
+
+
+
+.text-center{
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    color: var(--black-3);
+    font-size: 100px;
+
+}
