@@ -77,7 +77,7 @@
 }
 
 .comprovantes-tabela tbody tr:hover td {
-    background-color: var(--white-3);
+    background-color: var(--white-2);
 }
 
 .comprovantes-tabela .col-numero {
