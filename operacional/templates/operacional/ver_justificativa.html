@@ -24,15 +24,15 @@
             
             {% if justificativa.status == 'PENDENTE' %}
                 <p style="margin-top: 10px; color: #856404; font-size: 0.9em;">
-                    Sua justificativa está em análise pelo supervisor.
+                    Justificativa está em análise pelo supervisor.
                 </p>
             {% elif justificativa.status == 'APROVADA' %}
                 <p style="margin-top: 10px; color: #155724; font-size: 0.9em;">
-                    Sua justificativa foi aceita. Sua frequência foi regularizada.
+                    Justificativa aceita. Frequência regularizada.
                 </p>
             {% elif justificativa.status == 'REJEITADA' %}
                 <p style="margin-top: 10px; color: #721c24; font-size: 0.9em;">
-                    Sua justificativa não foi aceita. Entre em contato com o setor responsável.
+                    Justificativa não aceita. Entre em contato com o setor responsável.
                 </p>
             {% endif %}
         </div>
@@ -77,9 +77,33 @@
             </div>
         </fieldset>
 
-        <div class="form-actions">
-            <a href="{% url 'frequencia' %}" class="btn btn-secondary">Voltar para Frequências</a>
+        <div class="form-actions" style="display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-top: 30px;">
+    <!-- Botão Voltar (para todos) -->
+    <a href="{% url 'frequencia' %}" class="btn btn-secondary">
+        ← Voltar para Frequências
+    </a>
+    
+    <!-- Botões de Ação (só para supervisor) -->
+    {% if is_supervisor %}
+        <div style="display: flex; gap: 10px;">
+            <form method="post" action="{% url 'aprovar_rejeitar_justificativa' justificativa.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="aprovar">
+                <button type="submit" class="btn btn-success">
+                    ✓ Aprovar 
+                </button>
+            </form>
+            <form method="post" action="{% url 'aprovar_rejeitar_justificativa' justificativa.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="acao" value="rejeitar">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja rejeitar esta justificativa?')">
+                    ✕ Rejeitar 
+                </button>
+            </form>
+            <a href="{% url 'registrar_ponto_manual' %}?bolsista_id={{ justificativa.bolsista.id }}&data={{ justificativa.frequencia.data|date:'Y-m-d' }}" class="btn btn-warning">
+                Ajustar Frequência
+            </a>
         </div>
-    </div>
+    {% endif %}
 </div>
 {% endblock %}

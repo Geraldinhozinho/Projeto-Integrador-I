@@ -133,6 +133,10 @@
     background-color: #27ae60;
     color: white;
 }
+.btn-warning{
+    background-color: #f39d125f;
+    color: black;
+}
 
 .btn-success:hover {
     background-color: #229954;
