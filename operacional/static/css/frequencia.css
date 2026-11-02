@@ -371,7 +371,7 @@
     max-width: 500px;
     width: 90%;
     text-align: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: var(--borda-1);
 }
 
 .modal-titulo {
@@ -464,4 +464,42 @@
     padding: 5px 10px;
     border-radius: 30px; 
     text-decoration: none;
+}
+
+.resumo-supervisor {
+    display: flex; gap: 20px; margin-bottom: 30px;
+}
+
+.card-resumo {
+    background: var(--white); 
+    padding: 20px;
+    border-radius: 8px; 
+    border: var(--borda-grey-2);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.total-bolsistas {
+    margin: 0 0 10px 0; 
+    font-size: 14px; 
+    color: var(--grey-2);
+}
+
+.quantidade-bolsistas {
+    font-size: 32px; 
+    font-weight: bold; 
+    color: var(--green);
+}
+
+.justificativas-pendentes {
+    margin: 0 0 10px 0; 
+    font-size: 14px; 
+    color: var(--grey-2);
+}
+
+.quantidade-justificativas-pendentes {
+    font-size: 32px; 
+    font-weight: bold; 
+    color: var(--orange);
 }
