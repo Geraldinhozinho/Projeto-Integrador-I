@@ -342,7 +342,7 @@
     font-size: 12px;
 }
 
-.btn-primary { background-color: var(--blue-2); color: var(--white); }
+.btn-primary { background-color: var(--blue-4); color: var(--white); }
 .btn-success { background-color: var(--green); color: var(--white); }
 .btn-danger { background-color: var(--red); color: var(--white); }
 .btn-entrada { background-color: var(--green); color: var(--white); }
