@@ -24,7 +24,10 @@
     <!-- RESUMO DO MÊS -->
     <div class="resumo-container">
         <div class="card-ultima-marcacao">
-            <h3 class="card-titulo">Última Marcação</h3>
+            <div class="card-header">
+                <h3 class="card-titulo">Última Marcação</h3>
+                <a href="{% url 'criar_justificativa' ultima_frequencia.id %}" >Adicionar Justificativa</a>
+            </div>    
             
             {% if ultima_frequencia %}
                 <p class="data-marcacao">{{ ultima_frequencia.data|date:"d \d\e b \d\e Y - l" }}</p>

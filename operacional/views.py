@@ -6,7 +6,7 @@ import json
 import calendar
 from datetime import date, datetime
 from django.contrib import messages
-from .models import Bolsa, Bolsista, Agenda, Frequencia, Justificativa, Historico
+from .models import Bolsa, Bolsista, Agenda, Frequencia, Justificativa, Historico, Supervisor
 
 try:
     from .utils.qrcode_service import gerar_token_qr, validar_token_qr, gerar_imagem_qr
@@ -252,6 +252,43 @@ def frequencia_bolsista_especifico(request, bolsista_id):
     }
     return render(request, 'operacional/frequencia.html', context)
 
+# def criar_justificativa(request, frequencia_pk=None):
+#     if request.method == 'POST':
+#         data_inicio = request.POST.get('data_inicio')
+#         data_final = request.POST.get('data_final')
+#         motivo = request.POST.get('motivo')
+#         informacao_complementar = request.POST.get('informacao_complementar', '')
+#         anexo = request.FILES.get('anexo')
+        
+#         if frequencia_pk:
+#             frequencia = get_object_or_404(Frequencia, pk=frequencia_pk)
+#             bolsista = frequencia.bolsista
+#         else:
+#             bolsista = get_object_or_404(Bolsista, matricula=request.POST.get('matricula'))
+#             frequencia = None
+        
+#         justificativa = Justificativa(
+#             bolsista=bolsista,
+#             frequencia=frequencia,
+#             data_inicio=data_inicio,
+#             data_final=data_final,
+#             motivo=motivo,
+#             informacao_complementar=informacao_complementar,
+#             status='PENDENTE'
+#         )
+        
+#         if anexo:
+#             justificativa.anexo = anexo
+        
+#         justificativa.cadastrar_justificativa()
+        
+#         return redirect('frequencia')
+    
+#     context = {
+#         'frequencia': get_object_or_404(Frequencia, pk=frequencia_pk) if frequencia_pk else None
+#     }
+#     return render(request, 'operacional/criar_justificativa.html', context)
+
 def criar_justificativa(request, frequencia_pk=None):
     if request.method == 'POST':
         data_inicio = request.POST.get('data_inicio')
@@ -267,9 +304,13 @@ def criar_justificativa(request, frequencia_pk=None):
             bolsista = get_object_or_404(Bolsista, matricula=request.POST.get('matricula'))
             frequencia = None
         
+        # 👇 Pega o supervisor logado (ou o supervisor do setor do bolsista)
+        supervisor = get_object_or_404(Supervisor, email=request.user.email)
+        
         justificativa = Justificativa(
             bolsista=bolsista,
             frequencia=frequencia,
+            supervisor=supervisor,  # 👈 Campo obrigatório!
             data_inicio=data_inicio,
             data_final=data_final,
             motivo=motivo,
@@ -282,10 +323,20 @@ def criar_justificativa(request, frequencia_pk=None):
         
         justificativa.cadastrar_justificativa()
         
+        messages.success(request, 'Justificativa enviada para análise do supervisor.')
+        
+        if frequencia:
+            return redirect('frequencia_bolsista', bolsista_id=bolsista.id)
         return redirect('frequencia')
     
+    # 👇 Passa a frequência para o template (se vier pela URL)
+    frequencia_obj = None
+    if frequencia_pk:
+        frequencia_obj = get_object_or_404(Frequencia, pk=frequencia_pk)
+    
     context = {
-        'frequencia': get_object_or_404(Frequencia, pk=frequencia_pk) if frequencia_pk else None
+        'frequencia': frequencia_obj,
+        'bolsistas': Bolsista.objects.all().order_by('nome') if not frequencia_pk else None,
     }
     return render(request, 'operacional/criar_justificativa.html', context)
 
@@ -496,3 +547,4 @@ def registrar_ponto_manual(request):
         'hoje': timezone.now(),
     }
     return render(request, 'operacional/registro_manual.html', context)
+
