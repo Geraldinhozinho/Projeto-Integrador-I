@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.db.models import Max
 import json
 import calendar
 from datetime import date, datetime
@@ -496,3 +497,104 @@ def registrar_ponto_manual(request):
         'hoje': timezone.now(),
     }
     return render(request, 'operacional/registro_manual.html', context)
+
+def comprovantes_mensais(request):
+    bolsista_id = 1
+
+    bolsista = get_object_or_404(Bolsista, id=bolsista_id)
+
+    frequencias = (Frequencia.objects.filter(bolsista=bolsista).values('data__year', 'data__month').annotate(ultima_data=Max('data')).order_by('-data__year', '-data__month'))
+
+    meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+
+    comprovantes = []
+
+    for index, registro in enumerate(frequencias, start=1):
+        ano = registro['data__year']
+        mes = registro['data__month']
+
+        comprovantes.append({
+            'id': index,
+            'ano': ano,
+            'mes': meses[mes - 1],
+            'numero_mes': mes,  # Importante: número do mês
+            'programa': 'Apoio à Formação Estudantil (PF)',
+            'tipo': 'Folha de Frequência',
+            'ultima_atualizacao': registro['ultima_data'],
+            'arquivo': None,
+        })
+
+    context = {
+        'comprovantes': comprovantes,
+        'bolsista': bolsista,
+    }
+
+    return render(request, 'operacional/comprovantes_mensais.html', context)
+
+def relatorio_frequencia(request, ano=None, mes=None):
+    bolsista_id = 1  # Temporário: depois vincular ao usuário logado
+
+    bolsista = get_object_or_404(Bolsista, id=bolsista_id)
+
+    hoje = timezone.localtime(timezone.now())
+
+    # Se ano e mês vierem pela URL, usa esses valores.
+    # Caso contrário, tenta buscar pelos parâmetros GET.
+    if ano is None:
+        ano = request.GET.get('ano', hoje.year)
+
+    if mes is None:
+        mes = request.GET.get('mes', hoje.month)
+
+    try:
+        ano = int(ano)
+        mes = int(mes)
+
+        if mes < 1 or mes > 12:
+            raise ValueError
+
+    except (ValueError, TypeError):
+        ano = hoje.year
+        mes = hoje.month
+
+    primeiro_dia = date(ano, mes, 1)
+
+    ultimo_dia = date(
+        ano,
+        mes,
+        calendar.monthrange(ano, mes)[1]
+    )
+
+    registros = Frequencia.objects.filter(
+        bolsista=bolsista,
+        data__range=(primeiro_dia, ultimo_dia)
+    ).order_by('data')
+
+    token = gerar_token_qr()
+    qr_base64 = gerar_imagem_qr(token)
+
+    context = {
+        'registros': registros,
+        'bolsista': bolsista,
+
+        'mes': mes,
+        'ano': ano,
+
+        'supervisor': None,
+        'data_assinatura': hoje,
+        'data_emissao': hoje,
+
+        'codigo_verificador': str(bolsista.id).zfill(6),
+        'codigo_autenticacao': token,
+
+        'qr_code_url': (
+            f"data:image/png;base64,{qr_base64}"
+            if qr_base64 else None
+        ),
+    }
+
+    return render(
+        request,
+        'operacional/relatorio.html',
+        context
+    )

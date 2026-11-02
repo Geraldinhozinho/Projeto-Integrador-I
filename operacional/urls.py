@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (Index, bolsas, bolsistas, agendas, frequencia, frequencia_supervisor, registrar_entrada, registrar_saida, criar_justificativa, 
-            monitor_qrcode, registrar_ponto_qr, ver_justificativa, frequencia_bolsista_especifico, meus_bolsistas, registrar_ponto_manual)
+            monitor_qrcode, registrar_ponto_qr, ver_justificativa, frequencia_bolsista_especifico, meus_bolsistas, registrar_ponto_manual, comprovantes_mensais, relatorio_frequencia)
 
 urlpatterns = [
     path('', Index, name='index'),
@@ -22,4 +22,11 @@ urlpatterns = [
     
     path('monitor/qrcode/', monitor_qrcode, name='monitor_qrcode'),
     path('frequencia/registrar_qr/', registrar_ponto_qr, name='registrar_ponto_qr'),
+
+    path('comprovantes-mensais/', comprovantes_mensais, name='comprovantes_mensais'),
+    path(
+        'relatorio-frequencia/<int:ano>/<int:mes>/',
+        relatorio_frequencia,
+        name='relatorio_frequencia'
+    ),
 ]

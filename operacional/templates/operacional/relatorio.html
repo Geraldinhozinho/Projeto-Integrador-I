@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main %}
+<link rel="stylesheet" href="{% static 'css/relatorio.css' %}">
+
+<div class="frequencia-page">
+
+    <div class="breadcrumb">
+        Início > Bolsista > Meus Comprovantes Mensais > Detalhar
+    </div>
+
+    <h1 class="frequencia-titulo">Frequência</h1>
+
+    <h2 class="frequencia-subtitulo">Meus registros</h2>
+
+    <div class="tabela-container">
+        <table class="tabela-frequencia">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Entrada</th>
+                    <th>Saída</th>
+                    <th>Assinatura do bolsista</th>
+                    <th>Observação</th>
+                    <th>Status</th>
+                    <th>Documentos anexados</th>
+                    <th>Opções</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in registros %}
+                <tr>
+                    <td>{{ registro.data|date:"d/m/Y" }}</td>
+
+                    <td>
+                        {% if registro.hora_entrada %}
+                            {{ registro.hora_entrada|time:"H:i:s" }}
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if registro.hora_saida %}
+                            {{ registro.hora_saida|time:"H:i:s" }}
+                        {% endif %}
+                    </td>
+
+                    <td class="assinatura">
+                        {% if registro.assinatura %}
+                            {{ registro.assinatura }}
+                        {% endif %}
+
+                        {% if registro.ausente %}
+                            <span class="etiqueta-status etiqueta-status-ausente">
+                                Ausente
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if registro.observacao %}
+                            <span class="etiqueta-status etiqueta-status-observacao">
+                                {{ registro.observacao }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if registro.status %}
+                            <span class="etiqueta-status etiqueta-status-status">
+                                {{ registro.status }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="documento">
+                        {% if registro.documento %}
+                            <a href="{{ registro.documento.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer">
+                                {{ registro.documento.name|cut:"requisicoes_docs/" }}
+                            </a>
+                        {% endif %}
+                    </td>
+
+                    <td class="opcoes">
+                        {% if registro.documento %}
+                            <a href="{{ registro.documento.url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               title="Visualizar documento">
+                                Visualizar
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="sem-registros">
+                        Nenhum registro de frequência encontrado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <section class="comprovante">
+
+        <div class="comprovante-cabecalho">
+            Documento assinado eletronicamente por:
+        </div>
+
+        <ul class="assinatura-eletronica">
+            <li>
+                <strong>
+                    {{ supervisor.nome|default:"Supervisor Supervisor" }}
+                    - {{ supervisor.matricula|default:"000000" }}
+                    - Docente
+                </strong>,
+                em {{ data_assinatura|date:"d/m/Y H:i"|default:"01/09/2026 14:47" }}
+            </li>
+        </ul>
+
+        <div class="comprovante-conteudo">
+            <div class="comprovante-texto">
+                <p>
+                    Este documento foi emitido pelo Ponto de frequencia em
+                    {{ data_emissao|date:"d/m/Y"|default:"00/00/0000" }},
+                    para comprovar sua autenticidade faça a leitura do
+                    QRCode ao lado ou acesse
+                    <a href="#"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        https://ponto-de-frequencia-documentos
+                    </a>
+                    e forneça os dados abaixo:
+                </p>
+
+                <div class="codigos-autenticacao">
+                    <p>
+                        <strong>Código Verificador:</strong>
+                        {{ codigo_verificador|default:"000000" }}
+                    </p>
+                    <p>
+                        <strong>Código de Autenticação:</strong>
+                        {{ codigo_autenticacao|default:"ab0ccd0c40" }}
+                    </p>
+                </div>
+            </div>
+
+            {% if qr_code_url %}
+                <img class="qr-code"
+                     src="{{ qr_code_url }}"
+                     alt="QR Code de autenticação do documento">
+            {% else %}
+                <img class="qr-code" src="{% static 'img/qr-code.png' %}"
+            {% endif %}
+        </div>
+    </section>
+
+</div>
+
+{% endblock %}

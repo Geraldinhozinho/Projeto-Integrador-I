@@ -1,0 +1,166 @@
+.comprovantes-page {
+    width: 100%;
+    padding: 15px 38px;
+    box-sizing: border-box;
+
+    background-color: var(--white);
+    color: var(--black-2);
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+}
+
+.comprovantes-breadcrumb {
+    margin-bottom: 10px;
+
+    color: var(--white-4);
+    font-size: 11px;
+}
+
+.comprovantes-titulo {
+    margin: 0 0 36px;
+
+    color: var(--black-2);
+    font-size: 25px;
+    font-weight: 700;
+}
+.comprovantes-subtitulo {
+    margin: 0 0 10px;
+
+    color: var(--gray-2);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.comprovantes-tabela-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.comprovantes-tabela {
+    width: 100%;
+    border-collapse: collapse;
+
+    background-color: var(--white-4);
+
+    table-layout: auto;
+}
+
+.comprovantes-tabela thead th {
+    height: 35px;
+    padding: 8px 10px;
+
+    background-color: var(--white-3);
+    color: var(--black-2);
+    border: var(--borda-2);
+
+    font-size: 12px;
+    font-weight: 700;
+
+    text-align: center;
+    white-space: nowrap;
+}
+
+.comprovantes-tabela tbody td {
+    height: 36px;
+    padding: 5px 10px;
+
+    background-color: var(--white-5);
+
+    border: var(--borda-2);
+
+    color: var(--black-2);
+    font-size: 12px;
+
+    text-align: center;
+    white-space: nowrap;
+}
+
+.comprovantes-tabela tbody tr:hover td {
+    background-color: var(--white-3);
+}
+
+.comprovantes-tabela .col-numero {
+    width: 50px;
+}
+
+.comprovantes-tabela .col-programa {
+    min-width: 260px;
+}
+
+.comprovantes-tabela .col-arquivo {
+    min-width: 160px;
+}
+
+.comprovantes-tabela .col-atualizacao {
+    min-width: 180px;
+}
+
+.comprovantes-tabela .col-opcoes {
+    min-width: 140px;
+}
+
+.botao-download {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    width: 134px;
+    height: 24px;
+
+    box-sizing: border-box;
+
+    background-color: var(--black-2);
+    color: var(--white);
+
+    border-radius: 20px;
+    border: none;
+
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.botao-download:hover {
+    background-color: var(--black-3);
+    color: var(--white);
+}
+
+.icone-download {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.botao-detalhar {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 100px;
+    height: 20px;
+
+    box-sizing: border-box;
+
+    background-color: var(--white-3);
+    color: var(--black-2);
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.botao-detalhar:hover {
+    background-color: var(--white-3);
+    color: var(--black-2);
+}
+
+.sem-comprovantes {
+    padding: 25px;
+
+    color: var(--gray-2);
+    text-align: center;
+}

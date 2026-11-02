@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block main %}
+
+<link rel="stylesheet" href="{% static 'css/comprovantes_mensais.css' %}">
+
+<div class="comprovantes-page">
+
+    <div class="comprovantes-breadcrumb">
+        Início > Bolsista > Meus Comprovantes Mensais
+    </div>
+
+    <h1 class="comprovantes-titulo">
+        Comprovantes Mensais
+    </h1>
+
+    <h2 class="comprovantes-subtitulo">
+        Comprovantes Mensais
+    </h2>
+
+    <div class="comprovantes-tabela-container">
+
+        <table class="comprovantes-tabela">
+
+            <thead>
+                <tr>
+                    <th class="col-numero">#</th>
+                    <th>Programa</th>
+                    <th>Tipo</th>
+                    <th>Mês</th>
+                    <th>Ano</th>
+                    <th>Arquivo</th>
+                    <th>Última Atualização</th>
+                    <th>Opções</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for comprovante in comprovantes %}
+                <tr>
+
+                    <td>{{ forloop.counter }}</td>
+
+                    <td class="col-programa">
+                        {{ comprovante.programa }}
+                    </td>
+
+                    <td>
+                        {{ comprovante.tipo }}
+                    </td>
+
+                    <td>
+                        {{ comprovante.mes }}
+                    </td>
+
+                    <td>
+                        {{ comprovante.ano }}
+                    </td>
+
+                    <td class="col-arquivo">
+
+                        {% if comprovante.arquivo %}
+                        <a href="{{ comprovante.arquivo.url }}"
+                           class="botao-download"
+                           download>
+
+                            <span class="icone-download">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                     width="14"
+                                     height="14"
+                                     viewBox="0 0 24 24"
+                                     fill="currentColor">
+                                    <path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/>
+                                </svg>
+                            </span>
+
+                            Baixar Arquivo
+                        </a>
+                        {% endif %}
+
+                    </td>
+
+                    <td class="col-atualizacao">
+                        {{ comprovante.ultima_atualizacao|date:"d/m/Y" }}
+                    </td>
+
+                    <td class="col-opcoes">
+
+                        <a href="{% url 'relatorio_frequencia' comprovante.ano comprovante.numero_mes %}" class="botao-detalhar">
+                            Detalhar
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="8" class="sem-comprovantes">
+                        Nenhum comprovante mensal encontrado.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
