@@ -5,7 +5,7 @@ from .views import (Index, bolsas, bolsistas, agendas, frequencia, registrar_ent
                     relatorio_frequencia, lista_justificativas_supervisor, aprovar_rejeitar_justificativa, login_simples, logout_simples)
 
 urlpatterns = [
-    path('', Index, name='index'),
+    path('index/', Index, name='index'),
     path('bolsas/', bolsas, name='bolsas'),
     path('bolsistas/', bolsistas, name='bolsistas'),
     path('agendas/', agendas, name='agendas'),
@@ -34,6 +34,6 @@ urlpatterns = [
         name='relatorio_frequencia'
     ),
 
-    path('login/', login_simples, name='login_simples'),
+    path('', login_simples, name='login_simples'),
     path('logout/', logout_simples, name='logout_simples'),
 ]
