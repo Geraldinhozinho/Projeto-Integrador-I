@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (Index, bolsas, bolsistas, agendas, frequencia, registrar_entrada, 
                     registrar_saida, criar_justificativa, monitor_qrcode, registrar_ponto_qr, ver_justificativa, 
                     frequencia_bolsista_especifico, meus_bolsistas, registrar_ponto_manual, comprovantes_mensais, 
-                    relatorio_frequencia, lista_justificativas_supervisor, aprovar_rejeitar_justificativa, login_simples, logout_simples, lista_justificativas_bolsista)
+                    relatorio_frequencia, lista_justificativas_supervisor, aprovar_rejeitar_justificativa, login_simples, 
+                    logout_simples, lista_justificativas_bolsista)
 
 urlpatterns = [
     path('index/', Index, name='index'),
