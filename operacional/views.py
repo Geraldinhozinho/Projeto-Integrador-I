@@ -265,12 +265,22 @@ def meus_bolsistas(request):
     supervisor_id = request.session.get('supervisor_id')
     
     if not supervisor_id:
+        messages.error(request, 'Acesso restrito a supervisores.')
         return redirect('frequencia')
     
-    bolsistas = Bolsista.objects.all().order_by('nome')
+    try:
+        supervisor_logado = Supervisor.objects.get(id=supervisor_id)
+    except Supervisor.DoesNotExist:
+        messages.error(request, 'Supervisor não encontrado no sistema.')
+        return redirect('login_simples')
+    
+    bolsistas = Bolsista.objects.filter(
+        setor=supervisor_logado.setor
+    ).order_by('nome')
     
     hoje = timezone.localtime(timezone.now()).date()
     bolsistas_enriquecidos = []
+    total_justificativas_pendentes = 0
     
     for bolsista in bolsistas:
         registro_hoje = Frequencia.objects.filter(
@@ -293,6 +303,8 @@ def meus_bolsistas(request):
             status='PENDENTE'
         ).count()
         
+        total_justificativas_pendentes += justificativas_pendentes
+        
         bolsistas_enriquecidos.append({
             'bolsista': bolsista,
             'registro_hoje': registro_hoje,
@@ -303,9 +315,10 @@ def meus_bolsistas(request):
     context = {
         'bolsistas_enriquecidos': bolsistas_enriquecidos,
         'total_bolsistas': len(bolsistas_enriquecidos),
+        'total_justificativas_pendentes': total_justificativas_pendentes,
+        'supervisor_logado': supervisor_logado,
     }
     return render(request, 'operacional/meus_bolsistas.html', context)
-
 
 # ============================================================
 # REGISTRO MANUAL (Supervisor - Protegida)
