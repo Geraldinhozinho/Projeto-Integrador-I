@@ -30,11 +30,8 @@ urlpatterns = [
     path('frequencia/registrar_qr/', registrar_ponto_qr, name='registrar_ponto_qr'),
 
     path('comprovantes-mensais/', comprovantes_mensais, name='comprovantes_mensais'),
-    path(
-        'relatorio-frequencia/<int:ano>/<int:mes>/',
-        relatorio_frequencia,
-        name='relatorio_frequencia'
-    ),
+    path('comprovantes-mensais/<int:bolsista_id>/', comprovantes_mensais, name='comprovantes_mensais_bolsista'),
+    path('relatorio-frequencia/<int:bolsista_id>/<int:ano>/<int:mes>/', relatorio_frequencia, name='relatorio_frequencia'),
 
     path('', login_simples, name='login_simples'),
     path('logout/', logout_simples, name='logout_simples'),

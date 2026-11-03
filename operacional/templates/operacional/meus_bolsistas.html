@@ -45,6 +45,7 @@
                     <th>Status Hoje</th>
                     <th>Faltas no Mês</th>
                     <th>Justificativas Pendentes</th>
+                    <th>Comprovantes</th>
                     <th>Ações</th>
                 </tr>
             </thead>
@@ -58,16 +59,16 @@
                     <td>
                         {% if item.registro_hoje %}
                             {% if item.registro_hoje.status == 'EM_ABERTO' %}
-                                <span class="etiqueta-status" style="background: #fff3cd; color: #856404;">
+                                <span class="etiqueta-status">
                                     Em Aberto ({{ item.registro_hoje.hora_entrada|time:"H:i" }})
                                 </span>
                             {% elif item.registro_hoje.status == 'CONCLUIDA' %}
-                                <span class="etiqueta-status" style="background: #d4edda; color: #155724;">
+                                <span class="etiqueta-status">
                                     Concluída
                                 </span>
                             {% endif %}
                         {% else %}
-                            <span class="etiqueta-status" style="background: #f8d7da; color: #721c24;">
+                            <span class="etiqueta-status">
                                 Sem registro
                             </span>
                         {% endif %}
@@ -87,7 +88,12 @@
                         {% endif %}
                     </td>
                     <td class="opcoes">
-                        <a href="{% url 'frequencia_bolsista' item.bolsista.id %}" class="btn-link" style="margin-right: 10px;">
+                        <a href="{% url 'comprovantes_mensais_bolsista' item.bolsista.id %}" style="margin-right: 10px;">
+                            Ver Comprovantes
+                        </a>
+                    </td>
+                    <td class="opcoes">
+                        <a href="{% url 'frequencia_bolsista' item.bolsista.id %}" style="margin-right: 10px;">
                             Ver Frequência
                         </a>
                     </td>

@@ -573,21 +573,55 @@ def registrar_ponto_qr(request):
 # COMPROVANTES E RELATÓRIOS (Protegidas)
 # ============================================================
 @login_necessario
-def comprovantes_mensais(request):
-    bolsista_id = request.session.get('bolsista_id')
-    
-    if not bolsista_id:
-        return redirect('frequencia')
+def comprovantes_mensais(request, bolsista_id=None):
 
-    bolsista = get_object_or_404(Bolsista, id=bolsista_id)
+    # Caso 1: bolsista logado
+    bolsista_logado_id = request.session.get('bolsista_id')
 
-    frequencias = (Frequencia.objects.filter(bolsista=bolsista)
-                   .values('data__year', 'data__month')
-                   .annotate(ultima_data=Max('data'))
-                   .order_by('-data__year', '-data__month'))
+    if bolsista_logado_id:
+        bolsista = get_object_or_404(
+            Bolsista,
+            id=bolsista_logado_id
+        )
 
-    meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
-             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+    # Caso 2: supervisor logado
+    elif request.session.get('supervisor_id'):
+
+        # Supervisor ainda não escolheu um bolsista
+        if bolsista_id is None:
+            bolsistas = Bolsista.objects.all().order_by('nome')
+
+            return render(
+                request,
+                'operacional/selecionar_bolsista_comprovantes.html',
+                {
+                    'bolsistas': bolsistas,
+                }
+            )
+
+        # Supervisor escolheu um bolsista
+        bolsista = get_object_or_404(
+            Bolsista,
+            id=bolsista_id
+        )
+
+    else:
+        return redirect('login_simples')
+
+    # Buscar frequências do bolsista selecionado
+    frequencias = (
+        Frequencia.objects
+        .filter(bolsista=bolsista)
+        .values('data__year', 'data__month')
+        .annotate(ultima_data=Max('data'))
+        .order_by('-data__year', '-data__month')
+    )
+
+    meses = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril',
+        'Maio', 'Junho', 'Julho', 'Agosto',
+        'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ]
 
     comprovantes = []
 
@@ -609,14 +643,21 @@ def comprovantes_mensais(request):
     context = {
         'comprovantes': comprovantes,
         'bolsista': bolsista,
+        'supervisor_visualizando': bool(
+            request.session.get('supervisor_id')
+        ),
     }
 
-    return render(request, 'operacional/comprovantes_mensais.html', context)
+    return render(
+        request,
+        'operacional/comprovantes_mensais.html',
+        context
+    )
 
 
 @login_necessario
-def relatorio_frequencia(request, ano=None, mes=None):
-    bolsista_id = request.session.get('bolsista_id')
+def relatorio_frequencia(request, bolsista_id, ano, mes):
+    bolsista = get_object_or_404(Bolsista, id=bolsista_id)
     
     if not bolsista_id:
         return redirect('frequencia')
