@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (Index, bolsas, bolsistas, agendas, frequencia, registrar_entrada, 
                     registrar_saida, criar_justificativa, monitor_qrcode, registrar_ponto_qr, ver_justificativa, 
                     frequencia_bolsista_especifico, meus_bolsistas, registrar_ponto_manual, comprovantes_mensais, 
-                    relatorio_frequencia, lista_justificativas_supervisor, aprovar_rejeitar_justificativa, login_simples, logout_simples)
+                    relatorio_frequencia, lista_justificativas_supervisor, aprovar_rejeitar_justificativa, login_simples, logout_simples, lista_justificativas_bolsista)
 
 urlpatterns = [
     path('index/', Index, name='index'),
@@ -23,6 +23,7 @@ urlpatterns = [
     path('supervisor/meus_bolsistas/', meus_bolsistas, name='meus_bolsistas'),
     path('supervisor/justificativas/', lista_justificativas_supervisor, name='lista_justificativas_supervisor'),
     path('supervisor/justificativa/<int:justificativa_pk>/acao/', aprovar_rejeitar_justificativa, name='aprovar_rejeitar_justificativa'),
+    path('supervisor/bolsista/<int:bolsista_id>/justificativas/', lista_justificativas_bolsista, name='lista_justificativas_bolsista'),
     
     path('monitor/qrcode/', monitor_qrcode, name='monitor_qrcode'),
     path('frequencia/registrar_qr/', registrar_ponto_qr, name='registrar_ponto_qr'),

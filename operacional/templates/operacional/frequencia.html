@@ -26,14 +26,21 @@
         <div class="card-ultima-marcacao">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h3 class="card-titulo mb-0">Última Marcação</h3>
-
-                {# Só mostra o botão se existir uma frequência para justificar #}
+            
                 {% if ultima_frequencia %}
-                <a href="{% url 'criar_justificativa' ultima_frequencia.id %}" class="btn btn-sm btn-warning">
-                    <i class="bi bi-plus-circle"></i> Adicionar Justificativa
-                </a>
+                    {% if not is_supervisor %}
+                        {% if ultima_frequencia.status == 'FALTA' or ultima_frequencia.status == 'EM_ABERTO' %}
+                            <a href="{% url 'criar_justificativa' ultima_frequencia.id %}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-plus-circle"></i> Adicionar Justificativa
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'lista_justi    ficativas_bolsista' bolsista_selecionado.id %}" class="btn btn-sm btn-info">
+                            <i class="bi bi-list-ul"></i> Ver Todas as Justificativas
+                        </a>
+                    {% endif %}
                 {% else %}
-                <span class="text-muted small"></span>
+                    <span class="text-muted small"></span>
                 {% endif %}
             </div>
 

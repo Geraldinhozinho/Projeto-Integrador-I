@@ -500,6 +500,29 @@ def ver_justificativa(request, frequencia_pk):
     }
     return render(request, 'operacional/ver_justificativa.html', context)
 
+@login_necessario
+def lista_justificativas_bolsista(request, bolsista_id):
+    supervisor_id = request.session.get('supervisor_id')
+    
+    if not supervisor_id:
+        return redirect('frequencia')
+    
+    bolsista = get_object_or_404(Bolsista, id=bolsista_id)
+    
+    justificativas = Justificativa.objects.filter(
+        bolsista=bolsista
+    ).select_related('frequencia').order_by('-data_inicio')
+    
+    context = {
+        'bolsista': bolsista,
+        'justificativas': justificativas,
+        'total_justificativas': justificativas.count(),
+        'pendentes': justificativas.filter(status='PENDENTE').count(),
+        'aprovadas': justificativas.filter(status='APROVADA').count(),
+        'rejeitadas': justificativas.filter(status='REJEITADA').count(),
+    }
+    
+    return render(request, 'operacional/lista_justificativas_bolsista.html', context)
 
 # ============================================================
 # QR CODE (Públicas - usadas pelo scanner)
