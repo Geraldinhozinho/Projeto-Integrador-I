@@ -27,12 +27,6 @@
             <h3 class="total-bolsistas">Total de Bolsistas</h3>
             <div class="quantidade-bolsistas">{{ total_bolsistas }}</div>
         </div>
-        <div class="card-resumo">
-            <h3 class="justificativas-pendentes">Justificativas Pendentes</h3>
-            <div class="quantidade-justificativas-pendentes">
-                {{ bolsistas_enriquecidos|length|default:"0" }}
-            </div>
-        </div>
     </div>
 
     <div class="tabela-container">
@@ -44,7 +38,6 @@
                     <th>Setor</th>
                     <th>Status Hoje</th>
                     <th>Faltas no Mês</th>
-                    <th>Justificativas Pendentes</th>
                     <th>Comprovantes</th>
                     <th>Ações</th>
                 </tr>
@@ -78,13 +71,6 @@
                             <span style="color: #e74c3c; font-weight: bold;">{{ item.faltas_mes }}</span>
                         {% else %}
                             <span style="color: #27ae60;">0</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.justificativas_pendentes > 0 %}
-                            <span style="color: #f39c12; font-weight: bold;">{{ item.justificativas_pendentes }} pendentes</span>
-                        {% else %}
-                            <span style="color: #95a5a6;">Nenhuma</span>
                         {% endif %}
                     </td>
                     <td class="opcoes">

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -19,14 +19,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(s@h!90#)4$iwl#z5s0k-9=6ajh0bi!g1@=bcz8g*t-_2fvqk9'
+# Chave secreta: pega do .env, ou usa uma padrão apenas se rodar localmente sem .env
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-chave-reserva-para-desenvolvimento-local')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Debug: só será True se a variável no .env estiver exatamente como 'True'
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+# Allowed Hosts: pega a string do .env (ex: "meusite.com,192.168.1.50") e transforma em lista
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:8002,http://127.0.0.1:8002').split(',')
 
 # Application definition
 
@@ -116,7 +118,8 @@ LANGUAGE_CODE = 'pt-br'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 MEDIA_URL = '/media/'
