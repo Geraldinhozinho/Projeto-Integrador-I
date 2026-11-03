@@ -496,7 +496,8 @@ def ver_justificativa(request, frequencia_pk):
     
     context = {
         'frequencia': frequencia,
-        'justificativa': justificativa
+        'justificativa': justificativa,
+        'is_supervisor': request.session.get('user_type') == 'supervisor',
     }
     return render(request, 'operacional/ver_justificativa.html', context)
 
