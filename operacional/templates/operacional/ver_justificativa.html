@@ -80,7 +80,7 @@
         <div class="form-actions" style="display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-top: 30px;">
     <!-- Botão Voltar (para todos) -->
     <a href="{% url 'frequencia' %}" class="btn btn-secondary">
-        ← Voltar para Frequências
+        Voltar para Frequências
     </a>
     
     <!-- Botões de Ação (só para supervisor) -->
@@ -90,19 +90,16 @@
                 {% csrf_token %}
                 <input type="hidden" name="acao" value="aprovar">
                 <button type="submit" class="btn btn-success">
-                    ✓ Aprovar 
+                    Aprovar 
                 </button>
             </form>
             <form method="post" action="{% url 'aprovar_rejeitar_justificativa' justificativa.pk %}" class="d-inline">
                 {% csrf_token %}
                 <input type="hidden" name="acao" value="rejeitar">
                 <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja rejeitar esta justificativa?')">
-                    ✕ Rejeitar 
+                    Indeferir 
                 </button>
             </form>
-            <a href="{% url 'registrar_ponto_manual' %}?bolsista_id={{ justificativa.bolsista.id }}&data={{ justificativa.frequencia.data|date:'Y-m-d' }}" class="btn btn-warning">
-                Ajustar Frequência
-            </a>
         </div>
     {% endif %}
 </div>

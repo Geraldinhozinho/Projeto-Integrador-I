@@ -1,11 +1,13 @@
-{% extends "base.html" %}
 {% load static %}
-
-{% block css_personalizado %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de QR Code - COADES</title>
     <link rel="stylesheet" href="{% static 'css/monitor_qrcode.css' %}">
-{% endblock %}
-
-{% block main %}
+</head>
+<body>
 <div class="monitor-container">
     <h1 class="monitor-titulo">Monitor de QR Code - COADES</h1>
     <p class="monitor-descricao">O código se atualiza automaticamente a cada 50 segundos.</p>
@@ -26,5 +28,6 @@
     </div>
 </div>
 
-<script src="{% static 'js/monitor_qrcode.js' %}"></script>
-{% endblock %}
+<script src="js/monitor_qrcode.js"></script>
+</body>
+</html>
