@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block css_personalizado %}
-<link rel="stylesheet" href="{% static 'css/frequencia.css' %}">
+<link rel="stylesheet" href="{% static 'operacional/css/frequencia.css' %}">
 {% endblock %}
 
 {% block main %}
@@ -193,7 +193,7 @@
                     <td class="opcoes">
                         {% if freq.justificativa.exists %}
                         <a href="{% url 'ver_justificativa' freq.pk %}" class="btn-link">Ver Justificativa</a>
-                        {% elif freq.status == 'FALTA' %}
+                        {% elif freq.status == 'FALTA' and not is_supervisor  %}
                         <a href="{% url 'criar_justificativa' freq.pk %}" class="btn-link">Justificar</a>
                         {% endif %}
                     </td>
@@ -273,7 +273,7 @@
 </div>
 
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-<script src="{% static 'js/frequencia.js' %}"></script>
+<script src="{% static 'operacional/js/frequencia.js' %}"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {

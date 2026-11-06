@@ -744,7 +744,8 @@ def lista_justificativas_supervisor(request):
 
 @require_POST
 def aprovar_rejeitar_justificativa(request, justificativa_pk):
-    if not request.user.is_staff:
+    supervisor_id = request.session.get('supervisor_id')
+    if not supervisor_id:
         return redirect('frequencia')
     
     justificativa = get_object_or_404(Justificativa, pk=justificativa_pk)
@@ -752,13 +753,15 @@ def aprovar_rejeitar_justificativa(request, justificativa_pk):
     
     if acao == 'aprovar':
         justificativa.validar_justificativa(aprovado=True)
+        justificativa.save()
         if justificativa.frequencia:
             justificativa.frequencia.status = 'JUSTIFICADA'
             justificativa.frequencia.save()
         messages.success(request, f'Justificativa de {justificativa.bolsista.nome} aprovada.')
     elif acao == 'rejeitar':
         justificativa.validar_justificativa(aprovado=False)
-        messages.warning(request, f'Justificativa de {justificativa.bolsista.nome} rejeitada.')
+        justificativa.save()
+        messages.warning(request, f'Justificativa de {justificativa.bolsista.nome} Indeferida.')
     
     if justificativa.frequencia:
         return redirect('ver_justificativa', frequencia_pk=justificativa.frequencia.pk)
