@@ -6,23 +6,23 @@
 
 .page-title {
     font-size: 24px;
-    color: #2c3e50;
+    color: var(--black);
     margin-bottom: 20px;
 }
 
 .alert-info {
-    background-color: #d1ecf1;
-    border: 1px solid #bee5eb;
-    color: #0c5460;
+    background-color: var(--blue-2);
+    border: var(--borda-blue);
+    color: var(--black);
     padding: 12px 15px;
     border-radius: 4px;
     margin-bottom: 20px;
 }
 
 .alert-warning {
-    background-color: #fff3cd;
-    border: 1px solid #ffc107;
-    color: #856404;
+    background-color: var(--orange-2);
+    border: var(--borda-orange);
+    color: var(--black);
     padding: 12px 15px;
     border-radius: 4px;
     margin-top: 10px;
@@ -32,7 +32,7 @@
     background: white;
     border-radius: 8px;
     padding: 25px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: var(--borda);
 }
 
 .form-section {
@@ -44,9 +44,9 @@
 .form-section legend {
     font-size: 16px;
     font-weight: 600;
-    color: #34495e;
+    color: var(--black-3);
     padding: 10px 15px;
-    background-color: #ecf0f1;
+    background-color: var(--white-3);
     border-radius: 4px;
     margin-bottom: 15px;
     width: 100%;
@@ -66,11 +66,11 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #2c3e50;
+    color: var(--black-3);
 }
 
 .required {
-    color: #e74c3c;
+    color: var(--red);
 }
 
 .form-group input[type="date"],
@@ -79,7 +79,7 @@
 .form-group textarea {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #ddd;
+    border: var(--borda-2);
     border-radius: 4px;
     font-size: 14px;
     transition: border-color 0.3s;
@@ -88,12 +88,12 @@
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    border-color: #3498db;
+    border-color: var(--blue-4);
     outline: none;
 }
 
 .input-readonly {
-    background-color: #ecf0f1;
+    background-color: var(--white-2);
     cursor: not-allowed;
 }
 
@@ -101,11 +101,11 @@
     display: block;
     margin-top: 5px;
     font-size: 12px;
-    color: #7f8c8d;
+    color: var(--grey);
 }
 
 .error-message {
-    color: #e74c3c;
+    color: var(--red);
     font-size: 13px;
     margin-top: 5px;
 }
@@ -115,7 +115,7 @@
     gap: 10px;
     margin-top: 30px;
     padding-top: 20px;
-    border-top: 1px solid #ecf0f1;
+    border-top: var(--borda-2);
 }
 
 .btn {
@@ -130,26 +130,31 @@
 }
 
 .btn-success {
-    background-color: #27ae60;
-    color: white;
+    background-color: var(--green);
+    color: var(--white);
 }
 
 .btn-warning {
-    background-color: #f39d125f;
-    color: black;
+    background-color: var(--orange);
+    color: var(--black);
 }
 
 .btn-success:hover {
-    background-color: #229954;
+    background-color: var(--green);
 }
 
 .btn-secondary {
-    background-color: #95a5a6;
-    color: white;
+    background-color: var(--white-4);
+    color: var(--white);
 }
 
 .btn-secondary:hover {
-    background-color: #7f8c8d;
+    background-color: var(--white-4);
+}
+
+.btn-danger {
+    background-color: var(--red);
+    color: var(--white);
 }
 
 @media (max-width: 768px) {
@@ -167,7 +172,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--black-2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -175,12 +180,12 @@
 }
 
 .modal-box {
-    background: white;
+    background: var(--white);
     padding: 30px;
     border-radius: 10px;
     max-width: 500px;
     width: 90%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: var(--borda);
 }
 
 /* Fim modal */

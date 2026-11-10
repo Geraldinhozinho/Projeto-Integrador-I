@@ -19,22 +19,22 @@
     </div>
 
     <div class="form-justificativa">
-        <div class="status-header" style="text-align: center; margin-bottom: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-            <h3 style="margin: 0 0 10px 0; color: #2c3e50;">Status Atual</h3>
-            <span class="etiqueta-status etiqueta-{{ justificativa.status|lower }}" style="font-size: 1.2em; padding: 8px 20px;">
+        <div class="status-header">
+            <h3>Status Atual</h3>
+            <span class="etiqueta-status etiqueta-{{ justificativa.status|lower }}">
                 {{ justificativa.get_status_display }}
             </span>
             
             {% if justificativa.status == 'PENDENTE' %}
-                <p style="margin-top: 10px; color: #856404; font-size: 0.9em;">
+                <p>
                     Justificativa está em análise pelo supervisor.
                 </p>
             {% elif justificativa.status == 'APROVADA' %}
-                <p style="margin-top: 10px; color: #155724; font-size: 0.9em;">
+                <p>
                     Justificativa aceita. Frequência regularizada.
                 </p>
             {% elif justificativa.status == 'REJEITADA' %}
-                <p style="margin-top: 10px; color: #721c24; font-size: 0.9em;">
+                <p></p>
                     Justificativa não aceita. Entre em contato com o setor responsável.
                 </p>
             {% endif %}
@@ -80,7 +80,7 @@
             </div>
         </fieldset>
 
-        <div class="form-actions" style="display: flex; gap: 10px; justify-content: space-between; align-items: center; margin-top: 30px;">
+        <div class="form-actions">
     <!-- Botão Voltar (para todos) -->
     <a href="{% url 'frequencia' %}" class="btn btn-secondary">
         Voltar para Frequências
@@ -93,7 +93,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="acao" value="aprovar">
                 <button type="submit" class="btn btn-success">
-                    Aprovar 
+                    Deferir 
                 </button>
             </form>
             
@@ -104,7 +104,7 @@
 
         <div id="modalIndeferir" class="modal-overlay" style="display: none;">
             <div class="modal-box">
-                <h3 style="margin-top: 0; color: #721c24;">Indeferir Justificativa</h3>
+                <h3>Indeferir Justificativa</h3>
                 <p>Informe o motivo do indeferimento (opcional):</p>
                 
 
@@ -117,7 +117,6 @@
                         id="motivoRejeicao"
                         rows="4" 
                         placeholder="Ex.: Documento ilegível, prazo fora do permitido..."
-                        style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; resize: vertical; font-family: inherit;"
                     ></textarea>
 
                     <button type="button" class="btn btn-secondary" id="btnCancelar">
@@ -139,18 +138,18 @@
 {% endblock %}
 
 {% if is_supervisor %}
-        <div style="display: flex; gap: 10px;">
+        <div></div>
             <form method="post" action="{% url 'aprovar_rejeitar_justificativa' justificativa.pk %}" class="d-inline">
                 {% csrf_token %}
                 <input type="hidden" name="acao" value="aprovar">
                 <button type="submit" class="btn btn-success">
-                    Aprovar 
+                    Deferir 
                 </button>
             </form>
             <form method="post" action="{% url 'aprovar_rejeitar_justificativa' justificativa.pk %}" class="d-inline">
                 {% csrf_token %}
                 <input type="hidden" name="acao" value="rejeitar">
-                <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja rejeitar esta justificativa?')">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja indeferir esta justificativa?')">
                     Indeferir 
                 </button>
             </form>
