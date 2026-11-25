@@ -40,20 +40,20 @@
     <div class="login-container">
         <img src="{% static 'img/suap_logo.svg' %}" alt="SUAP" style="width: 120px; margin-bottom: 20px;">
         <h2>Acesso ao Sistema</h2>
-        
-        {% if messages %}
-            {% for message in messages %}
-                <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px;">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+        <h1>Login SUAP</h1>
 
-        <form method="post">
+        <form method="POST">
+
             {% csrf_token %}
-            <input type="text" name="matricula" class="login-input" placeholder="Digite sua matrícula" required autofocus>
-            <button type="submit" class="btn-login">Entrar</button>
+
+            {{ form.as_p }}
+
+            <button type="submit">
+                Entrar
+            </button>
+
         </form>
+    
     </div>
 </body>
 </html>
